@@ -20,7 +20,7 @@ ThemeData get lightTheme {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -46,7 +46,7 @@ ThemeData get darkTheme {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8),

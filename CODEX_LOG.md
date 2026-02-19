@@ -48,3 +48,7 @@
 3. Raffinare UX stato permessi (gestione denied/permanentlyDenied/restricted con call-to-action dedicate).
 4. Introdurre test aggiuntivi su schermata MonumentDetail e stati del permission controller.
 5. Preparare V2 con integrazione plugin `camera` e preview reale.
+
+### Iterazione 2026-02-19 (hotfix compatibilità ThemeData)
+- Corretto errore di tipo Flutter: sostituito `CardTheme` con `CardThemeData` in `lib/app/theme.dart` per compatibilità con la firma `ThemeData.cardTheme`.
+- Verifica locale in questo ambiente non eseguibile per assenza SDK Flutter (`flutter: command not found`).
