@@ -57,3 +57,10 @@
 - Corretto errore API `PermissionStatus`: rimosso uso del getter `isGranted` e sostituito con confronto esplicito `== PermissionStatus.granted`.
 - Aggiornata `CameraScreen` con import `permission_handler` e condizione esplicita `permissionStatus != PermissionStatus.granted`.
 - Validazione runtime/test bloccata in questo ambiente per assenza SDK Flutter.
+
+### Iterazione 2026-02-19 (hotfix Android embedding v2)
+- Risolto errore build Android "deleted Android v1 embedding" creando entrypoint Android moderno (`MainActivity` con `io.flutter.embedding.android.FlutterActivity`).
+- Aggiornato `AndroidManifest.xml` con metadata `flutterEmbedding=2` e `NormalTheme`.
+- Aggiunti file Gradle Android minimi compatibili con plugin Flutter moderno: `android/settings.gradle`, `android/build.gradle`, `android/gradle.properties`, `android/app/build.gradle`.
+- Aggiunte risorse tema Android minime (`styles.xml`, `launch_background.xml`) per coerenza manifest.
+- Nota: validazione build Android non eseguita qui per assenza SDK Flutter.
