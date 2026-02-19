@@ -1,6 +1,6 @@
-# InQuadra (V1)
+# InQuadra (V2)
 
-Versione iniziale Flutter dell'app InQuadra: include architettura base, navigazione, tema, placeholder UI e gestione permessi fotocamera (solo richiesta/stato).
+Versione V2 Flutter dell'app InQuadra: include architettura modulare, navigazione, tema coerente, schermate placeholder monumento e integrazione **camera live preview** con gestione permessi camera.
 
 ## Requisiti
 
@@ -17,7 +17,7 @@ flutter run
 ## Struttura progetto
 
 - `lib/app`: bootstrap, router, tema
-- `lib/features/camera`: placeholder camera e permessi
+- `lib/features/camera`: permessi camera + preview live (`camera`)
 - `lib/features/monuments`: scheda monumento placeholder
 - `lib/shared`: utility logger e widget condivisi
 
@@ -29,9 +29,9 @@ flutter test
 
 ## Roadmap breve
 
-- **V2**: integrazione camera live (preview reale)
 - **V3**: contenuti monumenti locali/offline
 - **V4**: riconoscimento monumenti e backend
+- **V5**: miglioramenti accessibilità avanzati e audio guida reale
 
 ## Continuità sviluppo: `CODEX_LOG.md`
 

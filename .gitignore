@@ -10,3 +10,6 @@ build/
 
 # macOS
 .DS_Store
+
+# Android
+android/.gradle/

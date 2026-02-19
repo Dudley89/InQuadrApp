@@ -14,18 +14,28 @@ class CameraPermissionController extends StateNotifier<PermissionStatus> {
   }
 
   Future<void> refreshStatus() async {
-    final status = await Permission.camera.status;
-    state = status;
-    AppLogger.info('Stato permesso camera: $status');
+    try {
+      final status = await Permission.camera.status;
+      state = status;
+      AppLogger.info('Stato permesso camera: $status');
+    } catch (error) {
+      AppLogger.error('Errore lettura stato permesso camera: $error');
+      state = PermissionStatus.denied;
+    }
   }
 
   Future<void> requestPermission() async {
-    final status = await Permission.camera.request();
-    state = status;
-    if (status == PermissionStatus.granted) {
-      AppLogger.info('Permesso camera concesso');
-    } else {
-      AppLogger.warn('Permesso camera non concesso: $status');
+    try {
+      final status = await Permission.camera.request();
+      state = status;
+      if (status == PermissionStatus.granted) {
+        AppLogger.info('Permesso camera concesso');
+      } else {
+        AppLogger.warn('Permesso camera non concesso: $status');
+      }
+    } catch (error) {
+      AppLogger.error('Errore richiesta permesso camera: $error');
+      state = PermissionStatus.denied;
     }
   }
 }

@@ -1,8 +1,8 @@
 # CODEX_LOG
 
 ## Stato release
-- Versione corrente: **V1 (bootstrap completo)**
-- Stato: **In sviluppo, base pronta per iterazioni successive**
+- Versione corrente: **V2 (camera live preview + permessi avanzati)**
+- Stato: **In sviluppo, build locale da validare con SDK Flutter disponibile**
 
 ## Decisioni prese
 - Stack V1: Flutter + Riverpod + go_router + permission_handler.
@@ -12,7 +12,7 @@
 - Tema light/dark condiviso con Material 3 e componenti base customizzati.
 
 ## Domande aperte
-- Definire naming definitivo del brand: `InQuadra` resta nome finale o solo provvisorio? NOTA DEL 19/02/2026: PROVVISORIO.
+- Definire naming definitivo del brand: `InQuadra` resta nome finale o solo provvisorio?
 - Confermare set di contenuti minimi della scheda monumento in V2 (campi obbligatori).
 - Decidere strategia accessibilità dettagliata (font scaling custom vs sola impostazione OS).
 
@@ -43,11 +43,11 @@
   - `ios/Runner/Info.plist` con `NSCameraUsageDescription`
 
 ## Prossimi passi
-1. Installare/configurare Flutter SDK nell'ambiente CI/dev e validare `flutter pub get`, `flutter analyze`, `flutter test`, run Android/iOS.
-2. Rigenerare scaffold nativo con `flutter create .` mantenendo custom code, per allineamento completo ai template ufficiali.
-3. Raffinare UX stato permessi (gestione denied/permanentlyDenied/restricted con call-to-action dedicate).
-4. Introdurre test aggiuntivi su schermata MonumentDetail e stati del permission controller.
-5. Preparare V2 con integrazione plugin `camera` e preview reale.
+1. Eseguire validazione completa locale/CI con SDK Flutter disponibile (`flutter pub get`, `flutter analyze`, `flutter test`, `flutter run`).
+2. Rigenerare/normalizzare scaffold nativo con `flutter create .` mantenendo custom code per allineamento ai template ufficiali.
+3. Aggiungere test dedicati a `CameraPermissionController` e stati UI `CameraScreen` (denied/permanentlyDenied/granted).
+4. Introdurre dataset monumenti locale (V3) e wiring UI con modello dati reale.
+5. Definire specifica accessibilità avanzata e audio guida reale (V5 roadmap).
 
 ### Iterazione 2026-02-19 (hotfix compatibilità ThemeData)
 - Corretto errore di tipo Flutter: sostituito `CardTheme` con `CardThemeData` in `lib/app/theme.dart` per compatibilità con la firma `ThemeData.cardTheme`.
@@ -76,6 +76,11 @@
 - Nessuna modifica funzionale all'app Flutter; fix limitato allo scaffold Android.
 - Validazione build completa non eseguita in questo ambiente per assenza SDK Flutter.
 
-### Iterazione UMANA 2026-02-19 test manuali
-- test manuali effettuati con successo;
-- è possibile proseguire con la V2.
+
+### Iterazione 2026-02-19 (V2 camera live preview)
+- Integrata dipendenza `camera` in `pubspec.yaml` e introdotto `camera_preview_controller.dart` con inizializzazione/dispose del `CameraController` via Riverpod.
+- Evoluta `CameraScreen` con preview reale (`CameraPreview`) quando permesso concesso, loading/error state e CTA `Simula riconoscimento` abilitata solo con permesso `granted`.
+- Raffinata UX permessi con branch dedicati per stati `denied`, `permanentlyDenied` e `restricted`, inclusa azione `Apri impostazioni`.
+- Aggiunta gestione errori nel `CameraPermissionController` per fallback sicuro in assenza plugin/runtime issues.
+- Aggiornati `.gitignore` (incluso `android/.gradle/`) e `README.md` a stato V2.
+- Validazione automatica completa non eseguita in ambiente corrente per assenza SDK Flutter.
