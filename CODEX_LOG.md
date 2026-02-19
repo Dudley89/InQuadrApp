@@ -12,7 +12,7 @@
 - Tema light/dark condiviso con Material 3 e componenti base customizzati.
 
 ## Domande aperte
-- Definire naming definitivo del brand: `InQuadra` resta nome finale o solo provvisorio?
+- Definire naming definitivo del brand: `InQuadra` resta nome finale o solo provvisorio? NOTA DEL 19/02/2026: PROVVISORIO.
 - Confermare set di contenuti minimi della scheda monumento in V2 (campi obbligatori).
 - Decidere strategia accessibilità dettagliata (font scaling custom vs sola impostazione OS).
 
@@ -75,3 +75,7 @@
 - Impostata icona launcher minima basata su `@android:drawable/sym_def_app_icon` per ripristinare compilazione resource-linking.
 - Nessuna modifica funzionale all'app Flutter; fix limitato allo scaffold Android.
 - Validazione build completa non eseguita in questo ambiente per assenza SDK Flutter.
+
+### Iterazione UMANA 2026-02-19 test manuali
+- test manuali effettuati con successo;
+- è possibile proseguire con la V2.
