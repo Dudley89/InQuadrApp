@@ -39,30 +39,30 @@ class MonumentDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Audio guida'),
+                  Text('Audio guida'),
                   Row(
                     children: [
-                      IconButton(onPressed: null, icon: const Icon(Icons.play_arrow)),
-                      IconButton(onPressed: null, icon: const Icon(Icons.pause)),
-                      const Text('Controlli disponibili in V2'),
+                      IconButton(onPressed: null, icon: Icon(Icons.play_arrow)),
+                      IconButton(onPressed: null, icon: Icon(Icons.pause)),
+                      Text('Controlli disponibili in V2'),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text('Accessibilità'),
                   SizedBox(height: 8),
                   Text('• Testo grande'),

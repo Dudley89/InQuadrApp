@@ -64,3 +64,8 @@
 - Aggiunti file Gradle Android minimi compatibili con plugin Flutter moderno: `android/settings.gradle`, `android/build.gradle`, `android/gradle.properties`, `android/app/build.gradle`.
 - Aggiunte risorse tema Android minime (`styles.xml`, `launch_background.xml`) per coerenza manifest.
 - Nota: validazione build Android non eseguita qui per assenza SDK Flutter.
+
+### Iterazione 2026-02-19 (lint fix const constructors MonumentDetail)
+- Risolti warning `prefer_const_constructors` e `prefer_const_literals_to_create_immutables` in `MonumentDetailScreen` rendendo const i blocchi `Card`/`Padding`/`Column`/`Row` e relativi widget figli immutabili.
+- Nessuna modifica funzionale ai comportamenti UI: solo ottimizzazioni lint/performance.
+- Validazione automatica locale ancora bloccata per assenza SDK Flutter nell'ambiente.
