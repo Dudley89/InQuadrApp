@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../app/router.dart';
 import '../application/camera_permission_controller.dart';
@@ -29,7 +30,7 @@ class CameraScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (!permissionStatus.isGranted) ...[
+          if (permissionStatus != PermissionStatus.granted) ...[
             const Text(
               'Per usare la fotocamera devi concedere il permesso.',
             ),

@@ -52,3 +52,8 @@
 ### Iterazione 2026-02-19 (hotfix compatibilità ThemeData)
 - Corretto errore di tipo Flutter: sostituito `CardTheme` con `CardThemeData` in `lib/app/theme.dart` per compatibilità con la firma `ThemeData.cardTheme`.
 - Verifica locale in questo ambiente non eseguibile per assenza SDK Flutter (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (hotfix PermissionStatus)
+- Corretto errore API `PermissionStatus`: rimosso uso del getter `isGranted` e sostituito con confronto esplicito `== PermissionStatus.granted`.
+- Aggiornata `CameraScreen` con import `permission_handler` e condizione esplicita `permissionStatus != PermissionStatus.granted`.
+- Validazione runtime/test bloccata in questo ambiente per assenza SDK Flutter.

@@ -22,7 +22,7 @@ class CameraPermissionController extends StateNotifier<PermissionStatus> {
   Future<void> requestPermission() async {
     final status = await Permission.camera.request();
     state = status;
-    if (status.isGranted) {
+    if (status == PermissionStatus.granted) {
       AppLogger.info('Permesso camera concesso');
     } else {
       AppLogger.warn('Permesso camera non concesso: $status');
