@@ -69,3 +69,9 @@
 - Risolti warning `prefer_const_constructors` e `prefer_const_literals_to_create_immutables` in `MonumentDetailScreen` rendendo const i blocchi `Card`/`Padding`/`Column`/`Row` e relativi widget figli immutabili.
 - Nessuna modifica funzionale ai comportamenti UI: solo ottimizzazioni lint/performance.
 - Validazione automatica locale ancora bloccata per assenza SDK Flutter nell'ambiente.
+
+### Iterazione 2026-02-19 (hotfix Android launcher icon mancante)
+- Risolto errore AAPT `resource mipmap/ic_launcher not found` aggiungendo risorsa `android/app/src/main/res/mipmap/ic_launcher.xml`.
+- Impostata icona launcher minima basata su `@android:drawable/sym_def_app_icon` per ripristinare compilazione resource-linking.
+- Nessuna modifica funzionale all'app Flutter; fix limitato allo scaffold Android.
+- Validazione build completa non eseguita in questo ambiente per assenza SDK Flutter.
