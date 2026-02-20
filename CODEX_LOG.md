@@ -84,3 +84,10 @@
 - Aggiunta gestione errori nel `CameraPermissionController` per fallback sicuro in assenza plugin/runtime issues.
 - Aggiornati `.gitignore` (incluso `android/.gradle/`) e `README.md` a stato V2.
 - Validazione automatica completa non eseguita in ambiente corrente per assenza SDK Flutter.
+
+### Iterazione 2026-02-19 (hotfix toolchain Android per CameraX)
+- Aggiornata versione Android Gradle Plugin in `android/settings.gradle` da `8.3.2` a `8.6.0` per compatibilità con dipendenze CameraX (`androidx.camera:*:1.5.3`).
+- Aggiornata versione Kotlin plugin in `android/settings.gradle` da `1.9.24` a `2.1.0` per allineamento ai warning Flutter tooling.
+- Aggiunto `android/gradle/wrapper/gradle-wrapper.properties` con Gradle `8.7` (distributionUrl) per soddisfare il requisito minimo segnalato in build.
+- Nessuna modifica funzionale alla logica app Flutter; fix mirato al build toolchain Android.
+- Build/test automatici non eseguiti in questo ambiente per assenza SDK Flutter.
