@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../application/monuments_providers.dart';
 
-class MonumentDetailScreen extends StatelessWidget {
-  const MonumentDetailScreen({super.key});
+class MonumentDetailScreen extends ConsumerWidget {
+  const MonumentDetailScreen({super.key, required this.monumentId});
+
+  final String monumentId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final monument = ref.watch(monumentByIdProvider(monumentId));
+
+    if (monument == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Scheda Monumento')),
+        body: const Center(child: Text('Monumento non trovato.')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Scheda Monumento')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Colosseo', style: Theme.of(context).textTheme.headlineSmall),
+          Text(monument.name, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 12),
           Container(
             height: 180,
@@ -26,16 +39,14 @@ class MonumentDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Anfiteatro simbolo di Roma, noto per la sua storia millenaria e la struttura iconica.',
-          ),
+          Text(monument.description),
           const SizedBox(height: 8),
-          const ExpansionTile(
-            title: Text('Approfondisci'),
+          ExpansionTile(
+            title: const Text('Approfondisci'),
             children: [
               Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Contenuto di approfondimento placeholder per la V1.'),
+                padding: const EdgeInsets.all(12),
+                child: Text(monument.deepDive),
               ),
             ],
           ),
@@ -50,24 +61,22 @@ class MonumentDetailScreen extends StatelessWidget {
                     children: [
                       IconButton(onPressed: null, icon: Icon(Icons.play_arrow)),
                       IconButton(onPressed: null, icon: Icon(Icons.pause)),
-                      Text('Controlli disponibili in V2'),
+                      Text('Controlli disponibili in V4'),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          const Card(
+          Card(
             child: Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Accessibilità'),
-                  SizedBox(height: 8),
-                  Text('• Testo grande'),
-                  Text('• Trascrizione contenuti'),
-                  Text('• Alto contrasto'),
+                  const Text('Accessibilità'),
+                  const SizedBox(height: 8),
+                  for (final item in monument.accessibility) Text('• $item'),
                 ],
               ),
             ),

@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import 'package:inquadra/app/inquadra_app.dart';
 
@@ -23,5 +23,17 @@ void main() {
 
     expect(find.text('Fotocamera'), findsOneWidget);
     expect(find.text('Simula riconoscimento'), findsOneWidget);
+  });
+
+  testWidgets('Naviga verso lista Monumenti da HomeScreen', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: InQuadraApp()),
+    );
+
+    await tester.tap(find.text('Monumenti'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Monumenti'), findsWidgets);
+    expect(find.text('Colosseo'), findsOneWidget);
   });
 }

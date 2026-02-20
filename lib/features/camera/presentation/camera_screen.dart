@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../app/router.dart';
 import '../application/camera_permission_controller.dart';
 import '../application/camera_preview_controller.dart';
+import '../../monuments/application/monuments_providers.dart';
 
 class CameraScreen extends ConsumerWidget {
   const CameraScreen({super.key});
@@ -15,6 +16,7 @@ class CameraScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final permissionStatus = ref.watch(cameraPermissionControllerProvider);
     final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
+    final featuredMonument = ref.watch(featuredMonumentProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fotocamera')),
@@ -31,7 +33,7 @@ class CameraScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: permissionStatus == PermissionStatus.granted
-                ? () => context.go(AppRoutePaths.monument)
+                ? () => context.go('${AppRoutePaths.monument}/${featuredMonument.id}')
                 : null,
             child: const Text('Simula riconoscimento'),
           ),

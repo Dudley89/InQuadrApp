@@ -1,8 +1,8 @@
 # CODEX_LOG
 
 ## Stato release
-- Versione corrente: **V2 (camera live preview + permessi avanzati)**
-- Stato: **In sviluppo, build locale da validare con SDK Flutter disponibile**
+- Versione corrente: **V3 (contenuti locali/offline + camera live preview)**
+- Stato: **In sviluppo, validazione runtime completa demandata ad ambiente con SDK Flutter**
 
 ## Decisioni prese
 - Stack V1: Flutter + Riverpod + go_router + permission_handler.
@@ -10,10 +10,11 @@
 - Permessi camera gestiti senza plugin `camera` in V1, solo stato/richiesta.
 - Logging centralizzato con wrapper su `debugPrint` e livelli `info/warn/error`.
 - Tema light/dark condiviso con Material 3 e componenti base customizzati.
+- V3 adotta dataset monumenti locale statico con repository dedicato per abilitare uso offline.
 
 ## Domande aperte
 - Definire naming definitivo del brand: `InQuadra` resta nome finale o solo provvisorio?
-- Confermare set di contenuti minimi della scheda monumento in V2 (campi obbligatori).
+- Confermare set di contenuti minimi definitivo della scheda monumento post-V3 (campi obbligatori).
 - Decidere strategia accessibilità dettagliata (font scaling custom vs sola impostazione OS).
 
 ## Problemi rilevati
@@ -45,8 +46,8 @@
 ## Prossimi passi
 1. Eseguire validazione completa locale/CI con SDK Flutter disponibile (`flutter pub get`, `flutter analyze`, `flutter test`, `flutter run`).
 2. Rigenerare/normalizzare scaffold nativo con `flutter create .` mantenendo custom code per allineamento ai template ufficiali.
-3. Aggiungere test dedicati a `CameraPermissionController` e stati UI `CameraScreen` (denied/permanentlyDenied/granted).
-4. Introdurre dataset monumenti locale (V3) e wiring UI con modello dati reale.
+3. Aggiungere test dedicati a `CameraPermissionController`, stati UI `CameraScreen` e dettaglio monumento dinamico.
+4. Progettare V4: integrazione riconoscimento monumenti + backend contenuti.
 5. Definire specifica accessibilità avanzata e audio guida reale (V5 roadmap).
 
 ### Iterazione 2026-02-19 (hotfix compatibilità ThemeData)
@@ -91,3 +92,13 @@
 - Aggiunto `android/gradle/wrapper/gradle-wrapper.properties` con Gradle `8.7` (distributionUrl) per soddisfare il requisito minimo segnalato in build.
 - Nessuna modifica funzionale alla logica app Flutter; fix mirato al build toolchain Android.
 - Build/test automatici non eseguiti in questo ambiente per assenza SDK Flutter.
+
+
+### Iterazione 2026-02-19 (V3 contenuti monumenti locali)
+- Introdotti modello dominio (`Monument`), dataset locale statico e repository feature monuments per contenuti offline.
+- Aggiunta schermata `MonumentsListScreen` con elenco monumenti locali e navigazione al dettaglio dinamico (`/monument/:id`).
+- Rifattorizzata `MonumentDetailScreen` per leggere contenuti locali via provider Riverpod in base all'ID route.
+- Aggiornati routing e entrypoint di navigazione: Home apre la lista monumenti, Camera simula riconoscimento verso monumento featured locale.
+- Aggiunto file root `VERSION_MATRIX.md` con definizione centralizzata delle versioni release/dependency/toolchain.
+- Aggiornati `README.md` a stato V3 e test widget con verifica navigazione Home -> Monumenti lista.
+- Validazione test/build Flutter non eseguibile in questo ambiente per assenza SDK (`flutter: command not found`).

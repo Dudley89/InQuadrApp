@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             OutlinedButton(
-              onPressed: () => context.go(AppRoutePaths.monument),
+              onPressed: () => context.go(AppRoutePaths.monuments),
               child: const Text('Monumenti'),
             ),
             const SizedBox(height: 20),
