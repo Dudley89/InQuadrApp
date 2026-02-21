@@ -1,6 +1,6 @@
 # InQuadra (V3)
 
-Versione V3 Flutter dell'app InQuadra: include architettura modulare, navigazione, tema coerente, camera live preview con permessi, contenuti monumenti **locali/offline** e mappa con monumenti vicini nella scheda dettaglio.
+Versione V3 Flutter dell'app InQuadra: include architettura modulare, navigazione, tema coerente, camera live preview con permessi, contenuti monumenti **locali/offline** e mappa stradale con posizione utente + monumenti vicini nella scheda dettaglio.
 
 ## Requisiti
 
@@ -18,6 +18,7 @@ flutter run
 
 - `lib/app`: bootstrap, router, tema
 - `lib/features/camera`: permessi camera + preview live (`camera`)
+- richiesta permessi camera+posizione all’avvio app (con fallback sicuro se negati/rimossi)
 - `lib/features/monuments`: dataset locale, repository e schermate lista/dettaglio
 - `lib/shared`: utility logger e widget condivisi
 

@@ -52,6 +52,21 @@ void main() {
     expect(find.text('InQuadra'), findsOneWidget);
   });
 
+  testWidgets('Scheda monumento mostra sezione mappa e vicinanze', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: InQuadraApp()),
+    );
+
+    await tester.tap(find.text('Monumenti'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Obelisco'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mappa e monumenti vicini'), findsOneWidget);
+    expect(find.textContaining('Raggio vicinanza impostato a 200m'), findsOneWidget);
+    expect(find.text('Monumenti vicini (<= 200m)'), findsOneWidget);
+  });
+
   testWidgets('Back da dettaglio monumento torna a lista Monumenti', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: InQuadraApp()),

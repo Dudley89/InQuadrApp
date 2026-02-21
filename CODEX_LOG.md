@@ -121,3 +121,31 @@
 - Aggiunta sezione “Monumenti vicini” calcolata da coordinate (raggio <= 1 km) tramite `latlong2`.
 - Aggiornati `pubspec.yaml`, `README.md`, `VERSION_MATRIX.md` e i test widget (stringhe dataset aggiornate: `Obelisco`).
 - Validazione Flutter non eseguita in questo ambiente per assenza SDK (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (V3.4 mappa stradale utile + interazione marker)
+- Ridotto il raggio dei “Monumenti vicini” da 1km a 200m e inserita nota esplicita in UI per ricordare la calibrazione (troppo poco/troppo alto) dopo test reali.
+- Abilitata posizione utente in `MonumentDetailScreen` tramite `geolocator` (richiesta permesso runtime; marker verde `my_location` su mappa quando disponibile).
+- Aggiunte dipendenze/permessi per funzionalità mappa utile: `geolocator` in `pubspec.yaml`, permessi `INTERNET` + location in AndroidManifest, `NSLocationWhenInUseUsageDescription` in Info.plist.
+- Migliorata interazione marker: tap su marker mostra card con nome monumento, distanza dall’utente e pulsante per aprire la scheda del monumento selezionato.
+- Rafforzata UX mappa con dicitura chiara “mappa stradale OpenStreetMap” e sezione vicinanze a 200m.
+- Validazione Flutter non eseguita in questo ambiente per assenza SDK (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (V3.5 richieste permessi allo start)
+- Introdotto `StartupPermissionRequester` in app shell per richiedere all'avvio i permessi di camera e posizione (`locationWhenInUse`).
+- Integrato il requester nel `builder` di `MaterialApp.router` per esecuzione globale allo startup senza bloccare la UI.
+- Gestiti errori di richiesta permessi con logging e fallback sicuro: in caso di permessi negati/rimossi l'app non crasha e continua a funzionare mostrando stati degradati.
+- Mantenute le richieste on-demand nei flussi feature (camera/location) quando necessario.
+- Aggiornato `README.md` con nota esplicita sulla strategia permessi startup + fallback.
+
+### Iterazione 2026-02-19 (V3.6 controllo internet startup)
+- Aggiunto controllo connettività internet allo startup (Wi-Fi/dati) in `StartupPermissionRequester` tramite `connectivity_plus`, con log informativo/warning e fallback non bloccante.
+- Esteso il perimetro startup check: camera + posizione + connettività, mantenendo comportamento anti-crash in caso di errori/permessi negati/assenza rete.
+- Aggiornata configurazione Android con `ACCESS_NETWORK_STATE` oltre a `INTERNET` per verificare stato rete.
+- Aggiornati `pubspec.yaml`, `README.md` e `VERSION_MATRIX.md` per tracciare dipendenza e policy connettività.
+
+### Iterazione 2026-02-19 (V3.7 idGlobal + immagini monumenti)
+- Esteso il modello `Monument` con `idGlobal` (intero) per supportare chiave univoca lato DB.
+- Aggiunto `imageUrl` nel modello/dataset locale e popolati i link immagine richiesti per i tre monumenti di Tagliacozzo.
+- Aggiornata `MonumentDetailScreen` per mostrare l'immagine via `Image.network` con fallback grafico in caso di errore caricamento.
+- Mostrato `ID globale` in scheda monumento per facilitare verifica e allineamento con future integrazioni backend.
+- Aggiornati `README.md` e `VERSION_MATRIX.md` con i nuovi campi dati del modello.

@@ -12,6 +12,8 @@
 - camera: ^0.11.0+2
 - flutter_map: ^7.0.2
 - latlong2: ^0.9.1
+- geolocator: ^12.0.0
+- connectivity_plus: ^6.0.5
 - flutter_lints: ^4.0.0
 
 ## Android toolchain versions
@@ -24,3 +26,13 @@
 
 ## Note gestione versioni
 - Aggiornare questo file a ogni iterazione quando cambia una versione di release, dipendenza o toolchain.
+
+## Android network permissions
+- INTERNET
+- ACCESS_NETWORK_STATE
+
+## Monument model keys
+- id (string locale)
+- idGlobal (int, chiave db)
+- imageUrl (URL immagine da mostrare in scheda)
+- latitude/longitude
