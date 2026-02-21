@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
 import '../application/monuments_providers.dart';
 
 class MonumentDetailScreen extends ConsumerWidget {
@@ -80,11 +78,6 @@ class MonumentDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () => context.go(AppRoutePaths.camera),
-            child: const Text('Torna alla fotocamera'),
           ),
         ],
       ),

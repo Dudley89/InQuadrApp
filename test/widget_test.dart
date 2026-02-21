@@ -36,4 +36,39 @@ void main() {
     expect(find.text('Monumenti'), findsWidgets);
     expect(find.text('Colosseo'), findsOneWidget);
   });
+
+  testWidgets('Back da Camera torna a Home', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: InQuadraApp()),
+    );
+
+    await tester.tap(find.text('Avvia fotocamera'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fotocamera'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.text('InQuadra'), findsOneWidget);
+  });
+
+  testWidgets('Back da dettaglio monumento torna a lista Monumenti', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: InQuadraApp()),
+    );
+
+    await tester.tap(find.text('Monumenti'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Colosseo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Scheda Monumento'), findsOneWidget);
+    expect(find.text('Torna alla fotocamera'), findsNothing);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Monumenti'), findsWidgets);
+    expect(find.text('Colosseo'), findsOneWidget);
+  });
 }

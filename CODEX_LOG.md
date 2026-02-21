@@ -102,3 +102,10 @@
 - Aggiunto file root `VERSION_MATRIX.md` con definizione centralizzata delle versioni release/dependency/toolchain.
 - Aggiornati `README.md` a stato V3 e test widget con verifica navigazione Home -> Monumenti lista.
 - Validazione test/build Flutter non eseguibile in questo ambiente per assenza SDK (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (V3.1 navigazione back-stack UX)
+- Corretto comportamento navigazione usando `context.push` (invece di `go`) nei flussi Home -> Fotocamera, Home -> Monumenti, Monumenti -> Scheda e Fotocamera -> Scheda per preservare lo stack e il tasto indietro nativo.
+- Rimossa CTA in fondo alla `MonumentDetailScreen` (`Torna alla fotocamera`) come richiesto: il ritorno avviene ora tramite back nativo.
+- Aggiunti test widget per verificare il back stack: `Back da Camera torna a Home` e `Back da dettaglio monumento torna a lista Monumenti`.
+- Nessuna modifica alla business logic dei contenuti; intervento focalizzato su UX di navigazione.
+- Validazione automatica Flutter bloccata in questo ambiente (`flutter: command not found`).

@@ -26,7 +26,7 @@ class MonumentsListScreen extends ConsumerWidget {
               title: Text(monument.name),
               subtitle: Text(monument.description),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go('${AppRoutePaths.monument}/${monument.id}'),
+              onTap: () => context.push('${AppRoutePaths.monument}/${monument.id}'),
             ),
           );
         },

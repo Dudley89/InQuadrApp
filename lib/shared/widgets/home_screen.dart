@@ -16,12 +16,12 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ElevatedButton(
-              onPressed: () => context.go(AppRoutePaths.camera),
+              onPressed: () => context.push(AppRoutePaths.camera),
               child: const Text('Avvia fotocamera'),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
-              onPressed: () => context.go(AppRoutePaths.monuments),
+              onPressed: () => context.push(AppRoutePaths.monuments),
               child: const Text('Monumenti'),
             ),
             const SizedBox(height: 20),

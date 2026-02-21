@@ -33,7 +33,7 @@ class CameraScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: permissionStatus == PermissionStatus.granted
-                ? () => context.go('${AppRoutePaths.monument}/${featuredMonument.id}')
+                ? () => context.push('${AppRoutePaths.monument}/${featuredMonument.id}')
                 : null,
             child: const Text('Simula riconoscimento'),
           ),
