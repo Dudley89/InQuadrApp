@@ -33,6 +33,7 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
     }
 
     final allMonuments = ref.watch(monumentsListProvider);
+    final selectedMarker = _selectedMarker ?? monument;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Scheda Monumento')),
@@ -41,6 +42,7 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
         builder: (context, snapshot) {
           final userPosition = snapshot.data;
           final nearbyMonuments = _nearbyMonuments(monument, allMonuments, 200);
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -80,48 +82,63 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
               Text('Mappa e monumenti vicini', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               SizedBox(
-                height: 260,
+                height: 300,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(monument.latitude, monument.longitude),
-                      initialZoom: 16,
-                      onTap: (_, __) => setState(() => _selectedMarker = null),
-                    ),
+                  child: Stack(
                     children: [
-                      TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.inquadra',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          for (final item in allMonuments)
-                            Marker(
-                              point: LatLng(item.latitude, item.longitude),
-                              width: 48,
-                              height: 48,
-                              child: GestureDetector(
-                                onTap: () => setState(() => _selectedMarker = item),
-                                child: Icon(
-                                  Icons.location_on,
-                                  color: item.id == monument.id ? Colors.red : Colors.blue,
-                                  size: item.id == monument.id ? 36 : 30,
+                      FlutterMap(
+                        options: MapOptions(
+                          initialCenter: LatLng(monument.latitude, monument.longitude),
+                          initialZoom: 16,
+                          minZoom: 15.5,
+                          maxZoom: 19,
+                          onTap: (_, __) => setState(() => _selectedMarker = monument),
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.inquadra',
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              for (final item in allMonuments)
+                                Marker(
+                                  point: LatLng(item.latitude, item.longitude),
+                                  width: 48,
+                                  height: 48,
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _selectedMarker = item),
+                                    child: Icon(
+                                      Icons.location_on,
+                                      color: item.id == monument.id ? Colors.red : Colors.blue,
+                                      size: item.id == monument.id ? 36 : 30,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          if (userPosition != null)
-                            Marker(
-                              point: LatLng(userPosition.latitude, userPosition.longitude),
-                              width: 42,
-                              height: 42,
-                              child: const Icon(
-                                Icons.my_location,
-                                color: Colors.green,
-                                size: 28,
-                              ),
-                            ),
+                              if (userPosition != null)
+                                Marker(
+                                  point: LatLng(userPosition.latitude, userPosition.longitude),
+                                  width: 42,
+                                  height: 42,
+                                  child: const Icon(
+                                    Icons.my_location,
+                                    color: Colors.green,
+                                    size: 28,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
+                      ),
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 8,
+                        child: _MarkerInfoCard(
+                          selectedMonument: monument,
+                          marker: selectedMarker,
+                        ),
                       ),
                     ],
                   ),
@@ -129,16 +146,9 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'La mappa usa strade OpenStreetMap. Raggio vicinanza impostato a 200m (da calibrare dopo test sul campo).',
+                'La mappa usa strade OpenStreetMap. Zoom out massimo limitato a circa 1km di raggio. Raggio vicinanza impostato a 200m (da calibrare dopo test sul campo).',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              if (_selectedMarker != null) ...[
-                const SizedBox(height: 8),
-                _MarkerInfoCard(
-                  marker: _selectedMarker!,
-                  userPosition: userPosition,
-                ),
-              ],
               const SizedBox(height: 8),
               Card(
                 child: Padding(
@@ -233,20 +243,25 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
 }
 
 class _MarkerInfoCard extends StatelessWidget {
-  const _MarkerInfoCard({required this.marker, required this.userPosition});
+  const _MarkerInfoCard({
+    required this.selectedMonument,
+    required this.marker,
+  });
 
+  final Monument selectedMonument;
   final Monument marker;
-  final Position? userPosition;
 
   @override
   Widget build(BuildContext context) {
-    final distanceText = _distanceFromUser(marker, userPosition);
+    final distanceText = _distanceFromSelected(selectedMonument, marker);
 
     return Card(
+      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(marker.name, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
@@ -262,18 +277,14 @@ class _MarkerInfoCard extends StatelessWidget {
     );
   }
 
-  String _distanceFromUser(Monument monument, Position? userPosition) {
-    if (userPosition == null) {
-      return 'Distanza utente non disponibile (permesso posizione non concesso).';
-    }
-
+  String _distanceFromSelected(Monument selected, Monument tapped) {
     const distance = Distance();
     final meters = distance.as(
       LengthUnit.Meter,
-      LatLng(userPosition.latitude, userPosition.longitude),
-      LatLng(monument.latitude, monument.longitude),
+      LatLng(selected.latitude, selected.longitude),
+      LatLng(tapped.latitude, tapped.longitude),
     );
 
-    return 'Distanza da te: ${meters.toStringAsFixed(0)} m';
+    return 'Distanza: ${meters.toStringAsFixed(0)} m';
   }
 }

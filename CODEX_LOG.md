@@ -162,3 +162,10 @@
 - Android: mantenuto `AndroidManifest.xml` su `@mipmap/ic_launcher` e aggiunti `mipmap-anydpi-v26/ic_launcher.xml` + `ic_launcher_round.xml` (solo XML) con drawables di sistema.
 - iOS: mantenuto solo `Contents.json` nell'asset catalog AppIcon, senza riferimenti a file PNG versionati.
 - Aggiornato `.gitignore` per evitare il reinserimento accidentale di asset icona PNG in commit futuri.
+
+### Iterazione 2026-02-21 (V4 UX permessi/back/mappa)
+- Home: intercettato il tasto indietro con popup di conferma "Sei sicuro di uscire?"; con "Sì" l'app si chiude, con "No" (o chiusura popup) si resta in app.
+- Startup permessi: controllo combinato camera + posizione + connettività (Wi-Fi/dati); se uno dei requisiti manca viene mostrato il popup "Autorizzazioni necessarie per far funzionare l'applicazione.".
+- Android: dopo il popup viene aperta la schermata impostazioni app (`openAppSettings`); al rientro in foreground (`AppLifecycleState.resumed`) il controllo viene rieseguito.
+- Scheda Monumento: la card del marker selezionato è stata spostata DENTRO la mappa (overlay) e mostra nome + "Distanza" calcolata tra monumento in scheda e marker selezionato.
+- Mappa: limitato lo zoom out con `minZoom` per mantenere una vista massima circa entro 1km di raggio attorno al monumento.
