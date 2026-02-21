@@ -34,7 +34,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Monumenti'), findsWidgets);
-    expect(find.text('Colosseo'), findsOneWidget);
+    expect(find.text('Obelisco'), findsOneWidget);
   });
 
   testWidgets('Back da Camera torna a Home', (tester) async {
@@ -59,7 +59,7 @@ void main() {
 
     await tester.tap(find.text('Monumenti'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Colosseo'));
+    await tester.tap(find.text('Obelisco'));
     await tester.pumpAndSettle();
 
     expect(find.text('Scheda Monumento'), findsOneWidget);
@@ -69,6 +69,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Monumenti'), findsWidgets);
-    expect(find.text('Colosseo'), findsOneWidget);
+    expect(find.text('Obelisco'), findsOneWidget);
   });
 }

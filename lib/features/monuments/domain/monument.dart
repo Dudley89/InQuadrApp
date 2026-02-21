@@ -5,6 +5,8 @@ class Monument {
     required this.description,
     required this.deepDive,
     required this.accessibility,
+    required this.latitude,
+    required this.longitude,
   });
 
   final String id;
@@ -12,4 +14,6 @@ class Monument {
   final String description;
   final String deepDive;
   final List<String> accessibility;
+  final double latitude;
+  final double longitude;
 }

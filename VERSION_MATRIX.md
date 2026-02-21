@@ -10,6 +10,8 @@
 - go_router: ^14.2.0
 - permission_handler: ^11.3.1
 - camera: ^0.11.0+2
+- flutter_map: ^7.0.2
+- latlong2: ^0.9.1
 - flutter_lints: ^4.0.0
 
 ## Android toolchain versions

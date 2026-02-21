@@ -109,3 +109,15 @@
 - Aggiunti test widget per verificare il back stack: `Back da Camera torna a Home` e `Back da dettaglio monumento torna a lista Monumenti`.
 - Nessuna modifica alla business logic dei contenuti; intervento focalizzato su UX di navigazione.
 - Validazione automatica Flutter bloccata in questo ambiente (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (V3.2 contenuti Tagliacozzo)
+- Sostituito integralmente il dataset locale monumenti con i contenuti forniti per Tagliacozzo (`Obelisco`, `Chiostro del Convento di San Francesco`, `Statua di Dante Alighieri`) mantenendo invariata la struttura dati (`id`, `name`, `description`, `deepDive`, `accessibility`).
+- Nessuna modifica a routing, UI o logica applicativa: aggiornamento solo contenutistico.
+- Verifica automatica Flutter non eseguibile in questo ambiente per assenza SDK (`flutter: command not found`).
+
+### Iterazione 2026-02-19 (V3.3 mappa monumenti e vicinanze)
+- Esteso il modello `Monument` con coordinate geografiche (`latitude`, `longitude`) e aggiornato il dataset locale Tagliacozzo con lat/lon per ciascun punto d’interesse.
+- Migliorata `MonumentDetailScreen` con mappa OpenStreetMap (`flutter_map`) centrata sul monumento selezionato e marker per tutti i monumenti locali.
+- Aggiunta sezione “Monumenti vicini” calcolata da coordinate (raggio <= 1 km) tramite `latlong2`.
+- Aggiornati `pubspec.yaml`, `README.md`, `VERSION_MATRIX.md` e i test widget (stringhe dataset aggiornate: `Obelisco`).
+- Validazione Flutter non eseguita in questo ambiente per assenza SDK (`flutter: command not found`).
