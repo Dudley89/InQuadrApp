@@ -20,6 +20,10 @@ class MonumentDetailScreen extends ConsumerStatefulWidget {
 
 class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
   Monument? _selectedMarker;
+  bool _showNextNearbyOverlay = false;
+  Monument? _nextNearbyMonument;
+  double? _nextNearbyDistanceMeters;
+  bool _nextDistanceFromUser = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,6 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
     }
 
     final allMonuments = ref.watch(monumentsListProvider);
-    final selectedMarker = _selectedMarker ?? monument;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Scheda Monumento')),
@@ -82,7 +85,7 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
               Text('Mappa e monumenti vicini', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               SizedBox(
-                height: 300,
+                height: 320,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Stack(
@@ -93,7 +96,13 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
                           initialZoom: 16,
                           minZoom: 15.5,
                           maxZoom: 19,
-                          onTap: (_, __) => setState(() => _selectedMarker = monument),
+                          onTap: (_, __) {
+                            _onMapBackgroundTap(
+                              currentMonument: monument,
+                              allMonuments: allMonuments,
+                              userPosition: userPosition,
+                            );
+                          },
                         ),
                         children: [
                           TileLayer(
@@ -108,7 +117,10 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
                                   width: 48,
                                   height: 48,
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _selectedMarker = item),
+                                    onTap: () => setState(() {
+                                      _selectedMarker = item;
+                                      _showNextNearbyOverlay = false;
+                                    }),
                                     child: Icon(
                                       Icons.location_on,
                                       color: item.id == monument.id ? Colors.red : Colors.blue,
@@ -137,7 +149,23 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
                         bottom: 8,
                         child: _MarkerInfoCard(
                           selectedMonument: monument,
-                          marker: selectedMarker,
+                          marker: _selectedMarker ?? monument,
+                          isVisible: _selectedMarker != null,
+                          onClose: () => setState(() => _selectedMarker = null),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 8,
+                        child: _NextNearbyOverlayCard(
+                          isVisible: _showNextNearbyOverlay,
+                          nearbyMonument: _nextNearbyMonument,
+                          distanceMeters: _nextNearbyDistanceMeters,
+                          distanceFromUser: _nextDistanceFromUser,
+                          onClose: () => setState(() {
+                            _showNextNearbyOverlay = false;
+                          }),
                         ),
                       ),
                     ],
@@ -203,6 +231,58 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
     );
   }
 
+  void _onMapBackgroundTap({
+    required Monument currentMonument,
+    required List<Monument> allMonuments,
+    required Position? userPosition,
+  }) {
+    final nearby = _nearbyMonuments(currentMonument, allMonuments, 200);
+
+    if (nearby.isEmpty) {
+      setState(() {
+        _selectedMarker = null;
+        _nextNearbyMonument = null;
+        _nextNearbyDistanceMeters = null;
+        _nextDistanceFromUser = userPosition != null;
+        _showNextNearbyOverlay = true;
+      });
+      return;
+    }
+
+    final origin = userPosition != null
+        ? LatLng(userPosition.latitude, userPosition.longitude)
+        : LatLng(currentMonument.latitude, currentMonument.longitude);
+
+    final next = _closestFromOrigin(origin, nearby);
+    final meters = _distanceMeters(
+      origin,
+      LatLng(next.latitude, next.longitude),
+    );
+
+    setState(() {
+      _selectedMarker = null;
+      _nextNearbyMonument = next;
+      _nextNearbyDistanceMeters = meters;
+      _nextDistanceFromUser = userPosition != null;
+      _showNextNearbyOverlay = true;
+    });
+  }
+
+  Monument _closestFromOrigin(LatLng origin, List<Monument> monuments) {
+    final sorted = [...monuments]
+      ..sort((a, b) {
+        final distanceA = _distanceMeters(origin, LatLng(a.latitude, a.longitude));
+        final distanceB = _distanceMeters(origin, LatLng(b.latitude, b.longitude));
+        return distanceA.compareTo(distanceB);
+      });
+    return sorted.first;
+  }
+
+  double _distanceMeters(LatLng from, LatLng to) {
+    const distance = Distance();
+    return distance.as(LengthUnit.Meter, from, to);
+  }
+
   Future<Position?> _resolveUserPosition() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -227,13 +307,11 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
     List<Monument> monuments,
     double maxMeters,
   ) {
-    const distance = Distance();
     return monuments.where((item) {
       if (item.id == current.id) {
         return false;
       }
-      final meters = distance.as(
-        LengthUnit.Meter,
+      final meters = _distanceMeters(
         LatLng(current.latitude, current.longitude),
         LatLng(item.latitude, item.longitude),
       );
@@ -246,32 +324,64 @@ class _MarkerInfoCard extends StatelessWidget {
   const _MarkerInfoCard({
     required this.selectedMonument,
     required this.marker,
+    required this.isVisible,
+    required this.onClose,
   });
 
   final Monument selectedMonument;
   final Monument marker;
+  final bool isVisible;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
     final distanceText = _distanceFromSelected(selectedMonument, marker);
 
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(marker.name, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(distanceText),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () => context.push('${AppRoutePaths.monument}/${marker.id}'),
-              child: const Text('Apri scheda monumento'),
+    return AnimatedSlide(
+      offset: isVisible ? Offset.zero : const Offset(0, 1),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+      child: AnimatedOpacity(
+        opacity: isVisible ? 1 : 0,
+        duration: const Duration(milliseconds: 180),
+        child: IgnorePointer(
+          ignoring: !isVisible,
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.place_outlined),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          marker.name,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: onClose,
+                        icon: const Icon(Icons.close),
+                        tooltip: 'Chiudi',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(distanceText),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () => context.push('${AppRoutePaths.monument}/${marker.id}'),
+                    child: const Text('Apri scheda monumento'),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -286,5 +396,88 @@ class _MarkerInfoCard extends StatelessWidget {
     );
 
     return 'Distanza: ${meters.toStringAsFixed(0)} m';
+  }
+}
+
+class _NextNearbyOverlayCard extends StatelessWidget {
+  const _NextNearbyOverlayCard({
+    required this.isVisible,
+    required this.nearbyMonument,
+    required this.distanceMeters,
+    required this.distanceFromUser,
+    required this.onClose,
+  });
+
+  final bool isVisible;
+  final Monument? nearbyMonument;
+  final double? distanceMeters;
+  final bool distanceFromUser;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      offset: isVisible ? Offset.zero : const Offset(0, 1),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+      child: AnimatedOpacity(
+        opacity: isVisible ? 1 : 0,
+        duration: const Duration(milliseconds: 180),
+        child: IgnorePointer(
+          ignoring: !isVisible,
+          child: Card(
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.near_me_outlined),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Prossimo punto vicino',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: onClose,
+                        icon: const Icon(Icons.close),
+                        tooltip: 'Chiudi',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (nearbyMonument == null) ...[
+                    const Text('Nessun punto vicino entro 200m.'),
+                  ] else ...[
+                    Text(
+                      nearbyMonument!.name,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    if (distanceMeters != null)
+                      Text('Distanza: ${distanceMeters!.round()} m'),
+                    if (!distanceFromUser)
+                      Text(
+                        'Posizione non disponibile: distanza calcolata dal monumento corrente.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tocca un marker per dettagli.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

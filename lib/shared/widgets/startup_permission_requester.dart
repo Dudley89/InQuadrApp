@@ -1,34 +1,39 @@
 import 'dart:io';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../features/camera/application/camera_permission_controller.dart';
 import '../logging/app_logger.dart';
+import '../startup/startup_requirements_checker.dart';
 
-class StartupPermissionRequester extends ConsumerStatefulWidget {
-  const StartupPermissionRequester({super.key, required this.child});
+final startupRequirementsCheckerProvider = Provider<StartupRequirementsChecker>(
+  (ref) => const StartupRequirementsChecker(),
+);
+
+enum _StartupDialogAction { openSettings, exit }
+
+class StartupGate extends ConsumerStatefulWidget {
+  const StartupGate({super.key, required this.child});
 
   final Widget child;
 
   @override
-  ConsumerState<StartupPermissionRequester> createState() =>
-      _StartupPermissionRequesterState();
+  ConsumerState<StartupGate> createState() => _StartupGateState();
 }
 
-class _StartupPermissionRequesterState
-    extends ConsumerState<StartupPermissionRequester>
+class _StartupGateState extends ConsumerState<StartupGate>
     with WidgetsBindingObserver {
-  bool _didRequest = false;
-  bool _isDialogOpen = false;
+  bool _checking = false;
+  bool _dialogOpen = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _requestStartupPermissions();
+      _checkAndGate();
     });
   }
 
@@ -41,80 +46,97 @@ class _StartupPermissionRequesterState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _requestStartupPermissions(force: true);
+      _checkAndGate(force: true);
     }
   }
 
-  Future<void> _requestStartupPermissions({bool force = false}) async {
-    if (_didRequest && !force) {
+  Future<void> _checkAndGate({bool force = false}) async {
+    if ((_checking || _dialogOpen) && !force) {
       return;
     }
-    _didRequest = true;
+    _checking = true;
 
-    AppLogger.info('Richiesta permessi iniziale (camera + posizione + connettività)');
-
-    await ref.read(cameraPermissionControllerProvider.notifier).requestPermission();
-    final cameraStatus = ref.read(cameraPermissionControllerProvider);
-
-    PermissionStatus locationStatus = PermissionStatus.denied;
     try {
-      locationStatus = await Permission.locationWhenInUse.request();
-      AppLogger.info('Stato permesso posizione: $locationStatus');
-    } catch (error) {
-      AppLogger.error('Errore richiesta permesso posizione: $error');
-    }
+      final checker = ref.read(startupRequirementsCheckerProvider);
+      final status = await checker.check();
 
-    final hasNetwork = await _checkInternetConnectivity();
-
-    final hasCameraPermission = cameraStatus == PermissionStatus.granted;
-    final hasLocationPermission = locationStatus == PermissionStatus.granted;
-
-    if (!hasCameraPermission || !hasLocationPermission || !hasNetwork) {
-      await _showMissingPermissionsDialog();
-    }
-  }
-
-  Future<bool> _checkInternetConnectivity() async {
-    try {
-      final results = await Connectivity().checkConnectivity();
-      final hasNetwork = results.any((item) => item != ConnectivityResult.none);
-      if (hasNetwork) {
-        AppLogger.info('Connettività internet disponibile: $results');
-      } else {
-        AppLogger.warn('Nessuna connettività internet (Wi-Fi/dati) allo startup');
+      if (status.allSatisfied || !mounted) {
+        return;
       }
-      return hasNetwork;
+
+      final action = await _showBlockingDialog(status);
+
+      if (action == _StartupDialogAction.openSettings) {
+        await openAppSettings();
+        return;
+      }
+
+      await _handleExitAction();
     } catch (error) {
-      AppLogger.error('Errore controllo connettività internet: $error');
-      return false;
+      AppLogger.error('Errore controllo requisiti startup: $error');
+    } finally {
+      _checking = false;
     }
   }
 
-  Future<void> _showMissingPermissionsDialog() async {
-    if (!mounted || _isDialogOpen) {
-      return;
-    }
-    _isDialogOpen = true;
+  Future<_StartupDialogAction> _showBlockingDialog(
+    StartupRequirementsStatus status,
+  ) async {
+    _dialogOpen = true;
 
-    await showDialog<void>(
+    final action = await showDialog<_StartupDialogAction>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        content: const Text(
-          'Autorizzazioni necessarie per far funzionare l\'applicazione.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+      builder: (context) {
+        final missingItems = status.missingRequirements();
+        return AlertDialog(
+          title: const Text('Permessi necessari'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Per continuare abilita i seguenti requisiti:'),
+              const SizedBox(height: 8),
+              for (final item in missingItems) Text('• $item'),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(_StartupDialogAction.exit),
+              child: const Text('Esci'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(_StartupDialogAction.openSettings),
+              child: const Text('Apri impostazioni'),
+            ),
+          ],
+        );
+      },
     );
 
-    _isDialogOpen = false;
+    _dialogOpen = false;
+    return action ?? _StartupDialogAction.exit;
+  }
+
+  Future<void> _handleExitAction() async {
+    if (!mounted) {
+      return;
+    }
+
     if (Platform.isAndroid) {
-      await openAppSettings();
+      await SystemNavigator.pop();
+      return;
+    }
+
+    if (Platform.isIOS) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Non è possibile chiudere l’app automaticamente su iOS.',
+          ),
+        ),
+      );
     }
   }
 

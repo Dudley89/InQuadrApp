@@ -169,3 +169,15 @@
 - Android: dopo il popup viene aperta la schermata impostazioni app (`openAppSettings`); al rientro in foreground (`AppLifecycleState.resumed`) il controllo viene rieseguito.
 - Scheda Monumento: la card del marker selezionato è stata spostata DENTRO la mappa (overlay) e mostra nome + "Distanza" calcolata tra monumento in scheda e marker selezionato.
 - Mappa: limitato lo zoom out con `minZoom` per mantenere una vista massima circa entro 1km di raggio attorno al monumento.
+
+### Iterazione 2026-02-21 (V4.1 overlay prossimità + startup gate bloccante)
+- Refactor startup: introdotti `StartupRequirementsChecker` (servizio) e `StartupGate` (widget) con flusso **check-first** (nessuna richiesta permessi immediata) per verificare internet, servizio posizione, permesso posizione, permesso camera.
+- Dialog bloccante (`barrierDismissible: false`) con titolo `Permessi necessari`, elenco puntato requisiti mancanti e azioni `Apri impostazioni` / `Esci`.
+- Loop di ricontrollo al rientro in app (`WidgetsBindingObserver` + `AppLifecycleState.resumed`): se i requisiti restano mancanti il dialog viene mostrato di nuovo.
+- Gestione uscita piattaforma-specifica: Android chiude con `SystemNavigator.pop()`, iOS mostra messaggio informativo (chiusura forzata non supportata).
+- Scheda Monumento (mappa): aggiunto overlay "Prossimo punto vicino" visibile **solo dopo interazione utente** (tap sulla mappa); al primo caricamento non appare nulla.
+- Decisione UX sui conflitti overlay/marker: scelta **A** → tap su marker mostra solo card marker e nasconde overlay "prossimo punto" per evitare doppio pannello sovrapposto.
+- Overlay prossimità migliorato con Material 3 (`Card`, icone, spacing), chiusura con pulsante X e animazioni `AnimatedSlide` + `AnimatedOpacity`.
+- Distanza overlay: usa posizione utente se disponibile; fallback su monumento corrente con messaggio esplicito quando la posizione non è disponibile.
+- Test: aggiornati widget test con checker fittizio via provider override (caso requisiti OK + caso requisiti mancanti con dialog bloccante).
+- Criticità ambiente: SDK Flutter/Dart assente, quindi impossibile eseguire `flutter test` localmente in questo container.

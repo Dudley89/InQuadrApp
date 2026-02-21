@@ -18,7 +18,7 @@ flutter run
 
 - `lib/app`: bootstrap, router, tema
 - `lib/features/camera`: permessi camera + preview live (`camera`)
-- richiesta permessi camera+posizione all’avvio app (con fallback sicuro se negati/rimossi)
+- startup gate bloccante: controllo internet + servizio posizione + permessi posizione/camera, dialog con apertura impostazioni e ricontrollo al resume
 - `lib/features/monuments`: dataset locale, repository e schermate lista/dettaglio
 - `lib/shared`: utility logger e widget condivisi
 

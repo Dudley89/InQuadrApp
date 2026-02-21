@@ -16,7 +16,7 @@ class InQuadraApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       routerConfig: appRouter,
       builder: (context, child) {
-        return StartupPermissionRequester(
+        return StartupGate(
           child: child ?? const SizedBox.shrink(),
         );
       },
