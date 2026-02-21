@@ -149,3 +149,16 @@
 - Aggiornata `MonumentDetailScreen` per mostrare l'immagine via `Image.network` con fallback grafico in caso di errore caricamento.
 - Mostrato `ID globale` in scheda monumento per facilitare verifica e allineamento con future integrazioni backend.
 - Aggiornati `README.md` e `VERSION_MATRIX.md` con i nuovi campi dati del modello.
+
+### Iterazione 2026-02-21 (V3.8 icona applicazione)
+- Aggiornate le risorse icona app su Android e iOS partendo da un asset comune (`assets/icons/app_icon.png`).
+- Android: sostituita la risorsa launcher con `android/app/src/main/res/mipmap/ic_launcher.png` e rimossa la vecchia definizione XML non più necessaria.
+- iOS: rigenerato l'intero set `ios/Runner/Assets.xcassets/AppIcon.appiconset/*` con relativo `Contents.json` coerente con le dimensioni richieste da Xcode.
+- Nessuna modifica alla logica applicativa Flutter; intervento limitato alle risorse grafiche native.
+- Verifica runtime Flutter non eseguibile in questo ambiente per assenza SDK (`flutter: command not found`).
+
+### Iterazione 2026-02-21 (V3.9 patch senza file binari)
+- Rimossi dalla patch tutti i file binari PNG delle icone (`android`/`assets`/`ios AppIcon.appiconset`) per rispettare il vincolo di PR testuale.
+- Android: mantenuto `AndroidManifest.xml` su `@mipmap/ic_launcher` e aggiunti `mipmap-anydpi-v26/ic_launcher.xml` + `ic_launcher_round.xml` (solo XML) con drawables di sistema.
+- iOS: mantenuto solo `Contents.json` nell'asset catalog AppIcon, senza riferimenti a file PNG versionati.
+- Aggiornato `.gitignore` per evitare il reinserimento accidentale di asset icona PNG in commit futuri.
