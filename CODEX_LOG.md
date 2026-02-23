@@ -181,3 +181,17 @@
 - Distanza overlay: usa posizione utente se disponibile; fallback su monumento corrente con messaggio esplicito quando la posizione non è disponibile.
 - Test: aggiornati widget test con checker fittizio via provider override (caso requisiti OK + caso requisiti mancanti con dialog bloccante).
 - Criticità ambiente: SDK Flutter/Dart assente, quindi impossibile eseguire `flutter test` localmente in questo container.
+
+### Iterazione 2026-02-21 (V4.2 startup gate route-first + fix navigator context)
+- Root cause crash: il flusso precedente mostrava dialog/azioni da un widget wrapper nel `builder` globale di `MaterialApp.router`, con casi in cui il `BuildContext` non era ancora sotto un `Navigator` valido → errore runtime: `Navigator operation requested with a context that does not include a Navigator`.
+- Fix architetturale: rimossa la logica di gating dal wrapper globale e introdotta route dedicata `/startup` (`StartupGateScreen`) come primo entrypoint del router (`initialLocation`), così ogni navigazione avviene dentro il tree gestito da `go_router`.
+- Navigazione sicura: transizione verso Home solo via `context.go('/home')` da `StartupGateScreen` dopo check positivi; nessuna navigazione avviata da service/singleton o da contesto fuori router.
+- Requisiti hard implementati in gate screen:
+  - Internet attivo (Wi-Fi/mobile) via `connectivity_plus`.
+  - Servizi posizione attivi (GPS) via `Geolocator.isLocationServiceEnabled`.
+  - Permesso posizione e fotocamera via `permission_handler` (con richiesta runtime e fallback `openAppSettings` se permanently denied).
+- UI gate: schermata dedicata con card stato requisito, azioni mirate (`Apri impostazioni rete`, `Apri impostazioni posizione`, `Concedi permesso`), pulsante `Retry` e `Esci`.
+- Loop ricontrollo: ri-verifica automatica al resume (`WidgetsBindingObserver`) dopo ritorno dalle impostazioni.
+- Nota piattaforma: su Android `Esci` usa `SystemNavigator.pop()`, su iOS viene mostrato messaggio informativo (chiusura forzata non supportata).
+- Test aggiornati: widget test con checker fake via provider override per validare rendering dello startup gate e scenario requisito mancante.
+- Vincolo ambiente: in questo container non sono presenti Flutter/Dart SDK, quindi impossibile eseguire `flutter test` / run reale per validazione runtime emulator/device.

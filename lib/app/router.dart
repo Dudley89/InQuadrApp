@@ -4,19 +4,26 @@ import 'package:go_router/go_router.dart';
 import '../features/camera/presentation/camera_screen.dart';
 import '../features/monuments/presentation/monument_detail_screen.dart';
 import '../features/monuments/presentation/monuments_list_screen.dart';
+import '../features/startup/presentation/startup_gate_screen.dart';
 import '../shared/logging/app_logger.dart';
 import '../shared/widgets/home_screen.dart';
 
 class AppRoutePaths {
-  static const home = '/';
+  static const startup = '/startup';
+  static const home = '/home';
   static const camera = '/camera';
   static const monuments = '/monuments';
   static const monument = '/monument';
 }
 
 final appRouter = GoRouter(
+  initialLocation: AppRoutePaths.startup,
   observers: [RouteLoggerObserver()],
   routes: [
+    GoRoute(
+      path: AppRoutePaths.startup,
+      builder: (context, state) => const StartupGateScreen(),
+    ),
     GoRoute(
       path: AppRoutePaths.home,
       builder: (context, state) => const HomeScreen(),

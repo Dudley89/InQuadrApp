@@ -1,4 +1,4 @@
-# InQuadra (V3)
+# InQuadra (V3.x)
 
 Versione V3 Flutter dell'app InQuadra: include architettura modulare, navigazione, tema coerente, camera live preview con permessi, contenuti monumenti **locali/offline** e mappa stradale con posizione utente + monumenti vicini nella scheda dettaglio.
 
@@ -21,6 +21,19 @@ flutter run
 - startup gate bloccante: controllo internet + servizio posizione + permessi posizione/camera, dialog con apertura impostazioni e ricontrollo al resume
 - `lib/features/monuments`: dataset locale, repository e schermate lista/dettaglio
 - `lib/shared`: utility logger e widget condivisi
+
+
+
+## Startup requirements gate
+
+All'avvio l'app apre la route `/startup` e verifica requisiti obbligatori prima di permettere l'uso delle feature:
+- internet attivo (Wi-Fi o dati mobili),
+- servizi posizione (GPS) attivi,
+- permesso posizione concesso,
+- permesso fotocamera concesso.
+
+Se manca qualcosa, viene mostrata una schermata dedicata con stato dei requisiti, azioni mirate (richiesta permesso / apertura impostazioni) e pulsante `Retry`.
+La navigazione verso `/home` avviene solo quando tutti i requisiti sono soddisfatti.
 
 ## Test
 

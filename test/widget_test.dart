@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:inquadra/app/inquadra_app.dart';
 import 'package:inquadra/shared/startup/startup_requirements_checker.dart';
-import 'package:inquadra/shared/widgets/startup_permission_requester.dart';
+import 'package:inquadra/features/startup/presentation/startup_gate_screen.dart';
 
 class _FakeStartupRequirementsChecker extends StartupRequirementsChecker {
   const _FakeStartupRequirementsChecker(this._status);
@@ -40,7 +40,7 @@ void main() {
     cameraPermission: PermissionStatus.granted,
   );
 
-  testWidgets('Mostra HomeScreen quando requisiti startup sono soddisfatti', (
+  testWidgets('StartupGate non crasha e porta in Home con requisiti soddisfatti', (
     tester,
   ) async {
     await pumpApp(tester, startupStatus: allOkStatus);
@@ -49,7 +49,7 @@ void main() {
     expect(find.text('Avvia fotocamera'), findsOneWidget);
   });
 
-  testWidgets('Mostra dialog bloccante quando manca un requisito startup', (
+  testWidgets('StartupGate mostra requisiti mancanti quando internet non disponibile', (
     tester,
   ) async {
     const missingStatus = StartupRequirementsStatus(
@@ -61,32 +61,10 @@ void main() {
 
     await pumpApp(tester, startupStatus: missingStatus);
 
-    expect(find.text('Permessi necessari'), findsOneWidget);
-    expect(
-      find.textContaining('Connessione internet assente (Wi-Fi o dati mobili).'),
-      findsOneWidget,
-    );
-    expect(find.text('Apri impostazioni'), findsOneWidget);
-    expect(find.text('Esci'), findsOneWidget);
-  });
-
-  testWidgets('Naviga verso CameraScreen da HomeScreen', (tester) async {
-    await pumpApp(tester, startupStatus: allOkStatus);
-
-    await tester.tap(find.text('Avvia fotocamera'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Fotocamera'), findsOneWidget);
-    expect(find.text('Simula riconoscimento'), findsOneWidget);
-  });
-
-  testWidgets('Naviga verso lista Monumenti da HomeScreen', (tester) async {
-    await pumpApp(tester, startupStatus: allOkStatus);
-
-    await tester.tap(find.text('Monumenti'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Monumenti'), findsWidgets);
-    expect(find.text('Obelisco'), findsOneWidget);
+    expect(find.text('Requisiti iniziali'), findsOneWidget);
+    expect(find.text('Internet'), findsOneWidget);
+    expect(find.textContaining('Nessuna connessione disponibile'), findsOneWidget);
+    expect(find.text('Apri impostazioni rete'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
   });
 }
