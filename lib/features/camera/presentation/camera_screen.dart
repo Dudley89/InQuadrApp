@@ -5,18 +5,69 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../app/router.dart';
+import '../../monuments/application/monuments_providers.dart';
 import '../application/camera_permission_controller.dart';
 import '../application/camera_preview_controller.dart';
-import '../../monuments/application/monuments_providers.dart';
+import '../scan/scan_providers.dart';
 
-class CameraScreen extends ConsumerWidget {
+class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CameraScreen> createState() => _CameraScreenState();
+}
+
+class _CameraScreenState extends ConsumerState<CameraScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    ref.listen<PermissionStatus>(
+      cameraPermissionControllerProvider,
+      (previous, next) {
+        if (next != PermissionStatus.granted) {
+          ref.read(scanControllerProvider.notifier).stop();
+          return;
+        }
+
+        final preview = ref.read(cameraPreviewControllerProvider);
+        preview.whenData((controller) {
+          ref.read(scanControllerProvider.notifier).start(controller);
+        });
+      },
+      fireImmediately: true,
+    );
+
+    ref.listen<AsyncValue<CameraController>>(
+      cameraPreviewControllerProvider,
+      (previous, next) {
+        next.when(
+          data: (controller) {
+            final permission = ref.read(cameraPermissionControllerProvider);
+            if (permission == PermissionStatus.granted) {
+              ref.read(scanControllerProvider.notifier).start(controller);
+            }
+          },
+          loading: () {},
+          error: (_, __) {
+            ref.read(scanControllerProvider.notifier).stop();
+          },
+        );
+      },
+      fireImmediately: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    ref.read(scanControllerProvider.notifier).stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final permissionStatus = ref.watch(cameraPermissionControllerProvider);
     final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
-    final featuredMonument = ref.watch(featuredMonumentProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fotocamera')),
@@ -31,12 +82,7 @@ class CameraScreen extends ConsumerWidget {
             onOpenSettingsPressed: openAppSettings,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: permissionStatus == PermissionStatus.granted
-                ? () => context.push('${AppRoutePaths.monument}/${featuredMonument.id}')
-                : null,
-            child: const Text('Simula riconoscimento'),
-          ),
+          const _ScanStatusSection(),
         ],
       ),
     );
@@ -114,7 +160,7 @@ class _PermissionSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (status == PermissionStatus.granted) {
-      return const Text('Anteprima live pronta.');
+      return const Text('Anteprima live pronta. Scansione automatica attiva.');
     }
 
     if (status == PermissionStatus.permanentlyDenied ||
@@ -127,9 +173,7 @@ class _PermissionSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           ElevatedButton(
-            onPressed: () {
-              onOpenSettingsPressed();
-            },
+            onPressed: onOpenSettingsPressed,
             child: const Text('Apri impostazioni'),
           ),
         ],
@@ -146,6 +190,102 @@ class _PermissionSection extends StatelessWidget {
           child: const Text('Concedi permesso'),
         ),
       ],
+    );
+  }
+}
+
+class _ScanStatusSection extends ConsumerWidget {
+  const _ScanStatusSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final permissionStatus = ref.watch(cameraPermissionControllerProvider);
+    final scanState = ref.watch(scanControllerProvider);
+
+    if (permissionStatus != PermissionStatus.granted) {
+      return const Text('Scansione disponibile dopo il permesso fotocamera.');
+    }
+
+    if (!scanState.isLocked) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              if (scanState.isBusy) ...[
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(child: Text(scanState.message)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final lockedId = scanState.lockedMonumentId;
+    if (lockedId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final monument = ref.watch(monumentByIdProvider(lockedId));
+    if (monument == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Monumento riconosciuto'),
+              const SizedBox(height: 8),
+              Text('ID: $lockedId'),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => ref.read(scanControllerProvider.notifier).retry(),
+                child: const Text('Riprova'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              monument.name,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(monument.description),
+            const SizedBox(height: 8),
+            Text('Confidenza: ${(scanState.lockedConfidence * 100).toStringAsFixed(0)}%'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton(
+                  onPressed: () => context.push('${AppRoutePaths.monument}/$lockedId'),
+                  child: const Text('Apri dettagli'),
+                ),
+                OutlinedButton(
+                  onPressed: () => ref.read(scanControllerProvider.notifier).retry(),
+                  child: const Text('Riprova'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

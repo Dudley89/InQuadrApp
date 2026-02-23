@@ -195,3 +195,17 @@
 - Nota piattaforma: su Android `Esci` usa `SystemNavigator.pop()`, su iOS viene mostrato messaggio informativo (chiusura forzata non supportata).
 - Test aggiornati: widget test con checker fake via provider override per validare rendering dello startup gate e scenario requisito mancante.
 - Vincolo ambiente: in questo container non sono presenti Flutter/Dart SDK, quindi impossibile eseguire `flutter test` / run reale per validazione runtime emulator/device.
+
+### Iterazione 2026-02-23 (V4 core riconoscimento camera throttled)
+- Implementato stack v4 per riconoscimento automatico monumento senza QR con pipeline separata: profili riconoscimento (`MonumentRecognitionProfile`), recognizer API, mock recognizer e scan state machine.
+- Creato dataset tecnico `localMonumentRecognitionProfiles` con collegamento a tutti i monumenti locali, threshold default 0.75, predisposizione `embeddings` (vuoti in v4) e `referenceImages`.
+- Aggiunto `MockMonumentRecognizer` con API finale: ~40% recognized sul monumento featured (confidence 0.80-0.95), altrimenti notRecognized (0.20-0.60) per test end-to-end lock/unlock.
+- Introdotto `ScanController` con `Timer.periodic` ogni 600ms + `takePicture()` throttled, busy gating anti-parallelismo, gestione `isTakingPicture`, stabilizzazione streak (3 consecutivi >= threshold), lock e stop timer.
+- Aggiunto retry flow: `Riprova` resetta lock/streak e riavvia scanning se controller disponibile.
+- Modificata `CameraScreen`:
+  - rimosso bottone "Simula riconoscimento";
+  - avvio scanning automatico con `ref.listen` su permesso e preview;
+  - stop scanning su permesso negato/error/dispose;
+  - nuova UI stato scan (messaggio + busy) e UI locked (card + Apri dettagli + Riprova).
+- Compatibilità/leak: stop timer in `dispose`, provider scan autoDispose con stop onDispose.
+- Vincolo ambiente: Flutter SDK assente nel container, quindi impossibile eseguire `flutter test`/run per validazione runtime reale.

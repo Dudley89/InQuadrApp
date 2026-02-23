@@ -18,6 +18,8 @@ flutter run
 
 - `lib/app`: bootstrap, router, tema
 - `lib/features/camera`: permessi camera + preview live (`camera`)
+
+- fotocamera: scanning automatico throttled (600ms), lock dopo 3 riconoscimenti stabili sopra soglia, azioni Apri dettagli / Riprova
 - startup gate bloccante: controllo internet + servizio posizione + permessi posizione/camera, dialog con apertura impostazioni e ricontrollo al resume
 - `lib/features/monuments`: dataset locale, repository e schermate lista/dettaglio
 - `lib/shared`: utility logger e widget condivisi
