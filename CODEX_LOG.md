@@ -209,3 +209,9 @@
   - nuova UI stato scan (messaggio + busy) e UI locked (card + Apri dettagli + Riprova).
 - Compatibilità/leak: stop timer in `dispose`, provider scan autoDispose con stop onDispose.
 - Vincolo ambiente: Flutter SDK assente nel container, quindi impossibile eseguire `flutter test`/run per validazione runtime reale.
+
+### Iterazione 2026-02-23 (V4.0.1 compatibilità Riverpod listen)
+- Corretto errore di compilazione su `camera_screen.dart` dovuto all'uso di `ref.listen(..., fireImmediately: true)` non supportato dalla versione corrente di `flutter_riverpod`.
+- Rimossi i parametri `fireImmediately` dai due `ref.listen` (permesso camera + preview).
+- Ripristinato comportamento iniziale equivalente con `Future.microtask` in `initState`: check una-tantum dello stato corrente (permesso + preview) e start/stop scan coerente.
+- Confermato che il doppio-start è mitigato dalla guardia `_started` già presente in `ScanController`.

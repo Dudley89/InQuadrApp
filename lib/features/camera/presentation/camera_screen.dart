@@ -35,7 +35,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           ref.read(scanControllerProvider.notifier).start(controller);
         });
       },
-      fireImmediately: true,
     );
 
     ref.listen<AsyncValue<CameraController>>(
@@ -54,8 +53,21 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           },
         );
       },
-      fireImmediately: true,
     );
+
+    Future.microtask(() {
+      final permission = ref.read(cameraPermissionControllerProvider);
+      final preview = ref.read(cameraPreviewControllerProvider);
+
+      if (permission != PermissionStatus.granted) {
+        ref.read(scanControllerProvider.notifier).stop();
+        return;
+      }
+
+      preview.whenData((controller) {
+        ref.read(scanControllerProvider.notifier).start(controller);
+      });
+    });
   }
 
   @override
