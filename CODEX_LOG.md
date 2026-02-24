@@ -221,3 +221,12 @@
 - Spostati i `ref.listen` di `CameraScreen` dentro `build` (rimossi da `initState`) mantenendo invariata la logica start/stop scan.
 - Mantenuto trigger iniziale one-shot senza `fireImmediately` tramite `Future.microtask` protetto da flag `_didInitialSync`.
 - Confermato stop scan quando permesso camera non è `granted` e anti-doppio-start garantito da guardia `_started` in `ScanController`.
+
+### Iterazione 2026-02-23 (V4.1 UI camera-first)
+- Rifatta `CameraScreen` in stile camera-first: preview full screen in `Stack`, overlay scan (titoli + brackets + punto centrale), pannello inferiore animato (`AnimatedSwitcher`) per stato/risultato.
+- Aggiunto layer di oscuramento leggero (`Colors.black.withOpacity(0.25)`) quando lo scan è locked, senza blur e senza nuove dipendenze.
+- Sostituita la vecchia UI a `ListView` con:
+  - fallback hero per permessi non concessi,
+  - pulsante back overlay (senza AppBar),
+  - bottom sheet risultato locked con immagine, titolo, descrizione, confidenza, `Apri dettagli` e `Riprova`.
+- Nessuna modifica alla logica di recognition/scan controller: start/stop/retry e mock recognizer invariati.
