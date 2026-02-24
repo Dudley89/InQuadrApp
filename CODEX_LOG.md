@@ -270,3 +270,5 @@
   - ordinamento nearby per distanza quando lat/lon disponibili,
   - rimossa sezione "In evidenza",
   - sostituito box fisso con card "Suggerimenti" dismissable per sessione (`tipsVisibleProvider`).
+- Hotfix runtime Riverpod/Navigator lock: in `CameraScreen` le reazioni a `RouteAware` e lifecycle (`didPushNext`, `didPopNext`, `didChangeAppLifecycleState`) ora deferiscono start/stop scan con `WidgetsBinding.instance.addPostFrameCallback` per evitare modifiche provider durante il build/navigation lock.
+- `ScanController.stop()` reso più idempotente: ritorno anticipato quando già fermo e nessun `state` update ridondante quando lo stato è già "Scansione ferma".

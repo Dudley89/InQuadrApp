@@ -26,6 +26,15 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   bool _didInitialSync = false;
   bool _routeSubscribed = false;
 
+  void _defer(VoidCallback fn) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      fn();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,23 +56,23 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
   @override
   void didPushNext() {
-    ref.read(scanControllerProvider.notifier).stop();
+    _defer(() => ref.read(scanControllerProvider.notifier).stop());
   }
 
   @override
   void didPopNext() {
-    _syncScanStateFromCurrentConditions();
+    _defer(_syncScanStateFromCurrentConditions);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      ref.read(scanControllerProvider.notifier).stop();
+      _defer(() => ref.read(scanControllerProvider.notifier).stop());
       return;
     }
 
-    if (state == AppLifecycleState.resumed && _isCurrentRoute()) {
-      _syncScanStateFromCurrentConditions();
+    if (state == AppLifecycleState.resumed) {
+      _defer(_syncScanStateFromCurrentConditions);
     }
   }
 

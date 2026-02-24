@@ -49,9 +49,18 @@ class ScanController extends StateNotifier<ScanState> {
   }
 
   void stop() {
+    if (!_started && _timer == null && state.isEnabled == false) {
+      return;
+    }
+
     _timer?.cancel();
     _timer = null;
     _started = false;
+
+    if (!state.isEnabled && !state.isBusy && state.message == 'Scansione ferma') {
+      return;
+    }
+
     state = state.copyWith(
       isEnabled: false,
       isBusy: false,
