@@ -19,11 +19,7 @@ class MonumentDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
-  Monument? _selectedMarker;
-  bool _showNextNearbyOverlay = false;
-  Monument? _nextNearbyMonument;
-  double? _nextNearbyDistanceMeters;
-  bool _nextDistanceFromUser = false;
+  bool _isDeepDiveExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,178 +43,213 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
         : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scheda Monumento')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(monument.name, style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 200,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                monument.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported_outlined, size: 48),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  onPressed: () => _openMapSheet(monument, allMonuments, userLatLng),
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Mappa'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  onPressed: () => _openAudioGuideSheet(monument),
-                  icon: const Icon(Icons.headphones_outlined),
-                  label: const Text('Audio guida'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text('ID globale: ${monument.idGlobal}'),
-          const SizedBox(height: 6),
-          Text(monument.description),
-          const SizedBox(height: 8),
-          ExpansionTile(
-            title: const Text('Approfondisci'),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(monument.deepDive),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text('Mappa e monumenti vicini', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 320,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 340,
+            pinned: true,
+            automaticallyImplyLeading: false,
+            stretch: true,
+            backgroundColor: Colors.black,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
                 children: [
-                  FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(monument.latitude, monument.longitude),
-                      initialZoom: 16,
-                      minZoom: 15.5,
-                      maxZoom: 19,
-                      onTap: (_, __) {
-                        _onMapBackgroundTap(
-                          currentMonument: monument,
-                          allMonuments: allMonuments,
-                          userLatLng: userLatLng,
-                        );
-                      },
+                  Image.network(
+                    monument.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.image_not_supported_outlined, size: 56),
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.inquadra',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          ..._buildMonumentMarkers(
-                            allMonuments: allMonuments,
-                            currentMonument: monument,
-                            onTap: (item) => setState(() {
-                              _selectedMarker = item;
-                              _showNextNearbyOverlay = false;
-                            }),
-                          ),
-                          if (userLatLng != null) _buildUserMarker(userLatLng),
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.45),
+                          Colors.black.withOpacity(0.15),
+                          Colors.black.withOpacity(0.60),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                  Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: 8,
-                    child: _MarkerInfoCard(
-                      selectedMonument: monument,
-                      marker: _selectedMarker ?? monument,
-                      isVisible: _selectedMarker != null,
-                      onClose: () => setState(() => _selectedMarker = null),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _circleIconButton(
+                            context: context,
+                            icon: Icons.arrow_back,
+                            onTap: context.pop,
+                          ),
+                          const Spacer(),
+                          _circleIconButton(
+                            context: context,
+                            icon: Icons.favorite_border,
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Preferiti in arrivo.')),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: 8,
-                    child: _NextNearbyOverlayCard(
-                      isVisible: _showNextNearbyOverlay,
-                      nearbyMonument: _nextNearbyMonument,
-                      distanceMeters: _nextNearbyDistanceMeters,
-                      distanceFromUser: _nextDistanceFromUser,
-                      onClose: () => setState(() {
-                        _showNextNearbyOverlay = false;
-                      }),
+                    left: 20,
+                    right: 20,
+                    bottom: 22,
+                    child: Text(
+                      monument.name,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        shadows: const [
+                          Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'La mappa usa strade OpenStreetMap. Zoom out massimo limitato a circa 1km di raggio. Raggio vicinanza impostato a 200m (da calibrare dopo test sul campo).',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Monumenti vicini (<= 200m)'),
-                  const SizedBox(height: 6),
-                  if (nearbyMonuments.isEmpty)
-                    const Text('Nessun monumento vicino disponibile nel raggio impostato.'),
-                  for (final item in nearbyMonuments) Text('• ${item.name}'),
-                ],
-              ),
-            ),
-          ),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Accessibilità'),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final item in monument.accessibility)
-                        Chip(label: Text(item)),
-                    ],
-                  ),
-                ],
+          SliverToBoxAdapter(
+            child: Transform.translate(
+              offset: const Offset(0, -24),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _InfoBar(
+                      monument: monument,
+                      onOpenMap: () => _openMapSheet(monument, allMonuments, userLatLng),
+                      onOpenAudio: () => _openAudioGuideSheet(monument),
+                    ),
+                    const SizedBox(height: 12),
+                    _SectionCard(
+                      title: 'Descrizione',
+                      child: Text(monument.description),
+                    ),
+                    const SizedBox(height: 12),
+                    _SectionCard(
+                      title: 'Storia e curiosità',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOut,
+                            child: Text(
+                              monument.deepDive,
+                              maxLines: _isDeepDiveExpanded ? null : 4,
+                              overflow: _isDeepDiveExpanded
+                                  ? TextOverflow.visible
+                                  : TextOverflow.fade,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              setState(() => _isDeepDiveExpanded = !_isDeepDiveExpanded);
+                            },
+                            child: Text(_isDeepDiveExpanded ? 'Mostra meno' : 'Leggi tutto'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SectionCard(
+                      title: 'Monumenti vicini (<= 200m)',
+                      child: nearbyMonuments.isEmpty
+                          ? const Text('Nessun monumento vicino disponibile nel raggio impostato.')
+                          : Column(
+                              children: [
+                                for (final item in nearbyMonuments)
+                                  ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: const CircleAvatar(
+                                      child: Icon(Icons.location_on_outlined),
+                                    ),
+                                    title: Text(item.name),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => context.push(
+                                      '${AppRoutePaths.monument}/${item.id}',
+                                    ),
+                                  ),
+                              ],
+                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SectionCard(
+                      title: 'Accessibilità',
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final item in monument.accessibility) Chip(label: Text(item)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SectionCard(
+                      title: 'Info tecniche',
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: const Text('Dettagli mappa e dataset'),
+                        childrenPadding: EdgeInsets.zero,
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'La mappa usa OpenStreetMap. Zoom e raggio vicinanza sono ottimizzati per esplorazione locale.',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Coming soon')),
+                          );
+                        },
+                        icon: const Icon(Icons.event_note_outlined),
+                        label: const Text('Pianifica visita'),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                  ],
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _circleIconButton({
+    required BuildContext context,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.black.withOpacity(0.35),
+      shape: const CircleBorder(),
+      child: IconButton(
+        onPressed: onTap,
+        icon: Icon(icon, color: Colors.white),
       ),
     );
   }
@@ -251,87 +282,6 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
     );
   }
 
-  void _onMapBackgroundTap({
-    required Monument currentMonument,
-    required List<Monument> allMonuments,
-    required LatLng? userLatLng,
-  }) {
-    final nearby = _nearbyMonuments(currentMonument, allMonuments, 200);
-
-    if (nearby.isEmpty) {
-      setState(() {
-        _selectedMarker = null;
-        _nextNearbyMonument = null;
-        _nextNearbyDistanceMeters = null;
-        _nextDistanceFromUser = userLatLng != null;
-        _showNextNearbyOverlay = true;
-      });
-      return;
-    }
-
-    final origin = userLatLng ?? LatLng(currentMonument.latitude, currentMonument.longitude);
-
-    final next = _closestFromOrigin(origin, nearby);
-    final meters = _distanceMeters(
-      origin,
-      LatLng(next.latitude, next.longitude),
-    );
-
-    setState(() {
-      _selectedMarker = null;
-      _nextNearbyMonument = next;
-      _nextNearbyDistanceMeters = meters;
-      _nextDistanceFromUser = userLatLng != null;
-      _showNextNearbyOverlay = true;
-    });
-  }
-
-  List<Marker> _buildMonumentMarkers({
-    required List<Monument> allMonuments,
-    required Monument currentMonument,
-    required ValueChanged<Monument> onTap,
-  }) {
-    return [
-      for (final item in allMonuments)
-        Marker(
-          point: LatLng(item.latitude, item.longitude),
-          width: 48,
-          height: 48,
-          child: GestureDetector(
-            onTap: () => onTap(item),
-            child: Icon(
-              Icons.location_on,
-              color: item.id == currentMonument.id ? Colors.red : Colors.blue,
-              size: item.id == currentMonument.id ? 36 : 30,
-            ),
-          ),
-        ),
-    ];
-  }
-
-  Marker _buildUserMarker(LatLng userLatLng) {
-    return Marker(
-      point: userLatLng,
-      width: 42,
-      height: 42,
-      child: const Icon(
-        Icons.my_location,
-        color: Colors.green,
-        size: 28,
-      ),
-    );
-  }
-
-  Monument _closestFromOrigin(LatLng origin, List<Monument> monuments) {
-    final sorted = [...monuments]
-      ..sort((a, b) {
-        final distanceA = _distanceMeters(origin, LatLng(a.latitude, a.longitude));
-        final distanceB = _distanceMeters(origin, LatLng(b.latitude, b.longitude));
-        return distanceA.compareTo(distanceB);
-      });
-    return sorted.first;
-  }
-
   double _distanceMeters(LatLng from, LatLng to) {
     const distance = Distance();
     return distance.as(LengthUnit.Meter, from, to);
@@ -352,6 +302,99 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
       );
       return meters <= maxMeters;
     }).toList();
+  }
+}
+
+class _InfoBar extends StatelessWidget {
+  const _InfoBar({
+    required this.monument,
+    required this.onOpenMap,
+    required this.onOpenAudio,
+  });
+
+  final Monument monument;
+  final VoidCallback onOpenMap;
+  final VoidCallback onOpenAudio;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.place_outlined),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${monument.latitude.toStringAsFixed(5)}, ${monument.longitude.toStringAsFixed(5)}',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'ID globale: ${monument.idGlobal}',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: onOpenMap,
+                    icon: const Icon(Icons.map_outlined),
+                    label: const Text('Apri mappa'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: onOpenAudio,
+                    icon: const Icon(Icons.headphones_outlined),
+                    label: const Text('Audio guida'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 10),
+            child,
+          ],
+        ),
+      ),
+    );
   }
 }
 

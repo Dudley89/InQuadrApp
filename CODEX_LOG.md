@@ -275,3 +275,6 @@
 - MonumentDetailScreen aggiornato: rimossa risoluzione posizione via `FutureBuilder/_resolveUserPosition` e integrato `locationControllerProvider` per marker utente `Tu` (my_location) sia preview mappa sia sheet mappa.
 - Aggiunte CTA sotto hero: `Mappa` apre bottom sheet quasi full-screen con `FlutterMap` + marker + overlay card in basso; `Audio guida` apre mini-player UI-only con play/pause finto, progress bar, messaggio prossimamente e chiusura.
 - `_MarkerInfoCard` ridisegnata con mini immagine network (fallback icona), nome, distanza, pulsante `Apri scheda` e close; vecchia card Audio guida disabilitata rimossa dal body principale.
+- MonumentDetailScreen premium refactor: rimossa la mappa inline dal body, introdotto layout `CustomScrollView` con `SliverAppBar` hero (overlay gradiente + back/favorite) e info bar sovrapposta con CTA `Apri mappa` + `Audio guida`.
+- Scheda dettaglio riorganizzata in card (Descrizione, Storia/Curiosità con espansione “Leggi tutto”, Vicini tappabili, Accessibilità con Chip, Info tecniche collassabile, CTA `Pianifica visita`).
+- Aptico riconoscimento rafforzato: `ScanController` ora attiva aptico nel ramo lock (source of truth, rispettando `hapticOnRecognizeProvider`) con doppia chiamata light+medium in microtask; `CameraScreen` mantiene backup post-frame con `HapticFeedback.mediumImpact()` al transition unlock->lock.

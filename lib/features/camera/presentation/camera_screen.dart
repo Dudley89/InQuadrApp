@@ -112,11 +112,16 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
     final autoRecognitionEnabled = ref.watch(autoRecognitionEnabledProvider);
     final showConfidence = ref.watch(showConfidenceProvider);
-    final hapticEnabled = ref.watch(hapticOnRecognizeProvider);
-
     ref.listen<ScanState>(scanControllerProvider, (previous, next) {
-      if ((previous?.isLocked ?? false) == false && next.isLocked && hapticEnabled) {
-        HapticFeedback.lightImpact();
+      final wasLocked = previous?.isLocked ?? false;
+      final hapticEnabled = ref.read(hapticOnRecognizeProvider);
+      if (!wasLocked && next.isLocked && hapticEnabled) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) {
+            return;
+          }
+          HapticFeedback.mediumImpact();
+        });
       }
     });
 

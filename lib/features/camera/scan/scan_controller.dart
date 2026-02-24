@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/logging/app_logger.dart';
+import '../../settings/application/settings_providers.dart';
 import '../data/monument_recognition_providers.dart';
 import '../recognition/recognizer.dart';
 import 'scan_state.dart';
@@ -151,6 +153,19 @@ class ScanController extends StateNotifier<ScanState> {
         lockedConfidence: confidence,
         message: 'Monumento riconosciuto',
       );
+
+      final hapticEnabled = _ref.read(hapticOnRecognizeProvider);
+      if (hapticEnabled) {
+        scheduleMicrotask(() async {
+          try {
+            await HapticFeedback.lightImpact();
+          } catch (_) {}
+          try {
+            await HapticFeedback.mediumImpact();
+          } catch (_) {}
+        });
+      }
+
       _timer?.cancel();
       _timer = null;
       _started = false;
