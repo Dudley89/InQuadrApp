@@ -18,9 +18,18 @@ class CameraScreen extends ConsumerStatefulWidget {
 }
 
 class _CameraScreenState extends ConsumerState<CameraScreen> {
+  bool _didInitialSync = false;
+
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    ref.read(scanControllerProvider.notifier).stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final permissionStatus = ref.watch(cameraPermissionControllerProvider);
+    final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
 
     ref.listen<PermissionStatus>(
       cameraPermissionControllerProvider,
@@ -55,31 +64,26 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
       },
     );
 
-    Future.microtask(() {
-      final permission = ref.read(cameraPermissionControllerProvider);
-      final preview = ref.read(cameraPreviewControllerProvider);
+    if (!_didInitialSync) {
+      _didInitialSync = true;
+      Future.microtask(() {
+        if (!mounted) {
+          return;
+        }
 
-      if (permission != PermissionStatus.granted) {
-        ref.read(scanControllerProvider.notifier).stop();
-        return;
-      }
+        final permission = ref.read(cameraPermissionControllerProvider);
+        final preview = ref.read(cameraPreviewControllerProvider);
 
-      preview.whenData((controller) {
-        ref.read(scanControllerProvider.notifier).start(controller);
+        if (permission != PermissionStatus.granted) {
+          ref.read(scanControllerProvider.notifier).stop();
+          return;
+        }
+
+        preview.whenData((controller) {
+          ref.read(scanControllerProvider.notifier).start(controller);
+        });
       });
-    });
-  }
-
-  @override
-  void dispose() {
-    ref.read(scanControllerProvider.notifier).stop();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final permissionStatus = ref.watch(cameraPermissionControllerProvider);
-    final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fotocamera')),

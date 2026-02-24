@@ -215,3 +215,9 @@
 - Rimossi i parametri `fireImmediately` dai due `ref.listen` (permesso camera + preview).
 - Ripristinato comportamento iniziale equivalente con `Future.microtask` in `initState`: check una-tantum dello stato corrente (permesso + preview) e start/stop scan coerente.
 - Confermato che il doppio-start è mitigato dalla guardia `_started` già presente in `ScanController`.
+
+### Iterazione 2026-02-23 (V4.0.2 fix crash Riverpod listen fuori build)
+- Corretto crash runtime Riverpod: `ref.listen can only be used within the build method of a ConsumerWidget`.
+- Spostati i `ref.listen` di `CameraScreen` dentro `build` (rimossi da `initState`) mantenendo invariata la logica start/stop scan.
+- Mantenuto trigger iniziale one-shot senza `fireImmediately` tramite `Future.microtask` protetto da flag `_didInitialSync`.
+- Confermato stop scan quando permesso camera non è `granted` e anti-doppio-start garantito da guardia `_started` in `ScanController`.
