@@ -241,3 +241,14 @@
   - "Tutti i monumenti" con mini-grid e CTA "Vedi tutti".
 - Conferma uscita mantenuta invariata con `PopScope` + dialog "Sei sicuro di uscire?".
 - Aggiunta schermata `ReleasesScreen` con elenco placeholder delle prossime release (v5-v10).
+
+### Iterazione 2026-02-23 (V4.3 bottom nav riutilizzabile)
+- Introdotto componente riutilizzabile `AppBottomNav` con voci Home / Scansiona / Monumenti / Impostazioni e navigazione tramite `context.go(...)` (no push, no stack infinito).
+- Introdotto `AppShell` che incapsula `child` + `bottomNavigationBar` condivisa e calcola l'indice selezionato dalla location corrente.
+- Mappatura indice implementata:
+  - `/home` -> 0
+  - `/camera` -> 1
+  - `/monuments` e `/monument/:id` -> 2
+  - `/settings` -> 3
+- Router aggiornato: route principali wrappate in `AppShell` (home/camera/monuments/monument-detail/settings), mentre `/startup` e `/releases` restano senza bottom nav.
+- Aggiunta schermata `SettingsScreen` minima per completare il tab "Impostazioni".
