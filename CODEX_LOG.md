@@ -252,3 +252,21 @@
   - `/settings` -> 3
 - Router aggiornato: route principali wrappate in `AppShell` (home/camera/monuments/monument-detail/settings), mentre `/startup` e `/releases` restano senza bottom nav.
 - Aggiunta schermata `SettingsScreen` minima per completare il tab "Impostazioni".
+
+### Iterazione 2026-02-24 (V4.4 route-aware scan + settings reali + location bootstrap)
+- Camera resa route-aware/lifecycle-aware: stop immediato dello scan quando una route viene pushata sopra `/camera` (`didPushNext`) e ripartenza controllata al ritorno (`didPopNext`) solo se riconoscimento automatico è ON, permesso camera granted e preview pronta.
+- Aggiunto `RouteObserver` globale (`appRouteObserver`) al router GoRouter e sottoscrizione in `CameraScreen` con `RouteAware`.
+- Aggiunti settings provider Riverpod (`autoRecognitionEnabled`, `showConfidence`, `hapticOnRecognize`, `tipsVisible`) e integrazione completa in camera/home/settings.
+- `CameraScreen` ora supporta modalità:
+  - automatica (comportamento attuale),
+  - manuale quando auto-recognition OFF (pulsanti `Avvia scansione` / `Ferma`).
+- Aggiunto feedback aptico (`HapticFeedback.lightImpact`) al passaggio a stato locked, controllato da toggle impostazioni.
+- Aggiunta visibilità condizionale della confidenza in card risultato locked (`Mostra confidenza`).
+- Creato `LocationController` con stato completo (enabled/loading/service/permission/permanentlyDenied/lat-lon/error) e metodi `bootstrap`, `enable`, `disable` usando `permission_handler` + `geolocator`.
+- StartupGateScreen: prima della navigazione a `/home`, esegue bootstrap posizione non bloccante (`unawaited(...)`).
+- SettingsScreen rifatta con card Material e switch reali per riconoscimento/posizione, incluso stato posizione e CTA `Apri impostazioni app` quando permesso permanentemente negato.
+- Home aggiornata:
+  - pulsante reale `Attiva posizione` in "Vicino a te" solo quando location non attiva,
+  - ordinamento nearby per distanza quando lat/lon disponibili,
+  - rimossa sezione "In evidenza",
+  - sostituito box fisso con card "Suggerimenti" dismissable per sessione (`tipsVisibleProvider`).

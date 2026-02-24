@@ -2,10 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/account/presentation/releases_screen.dart';
-import '../features/settings/presentation/settings_screen.dart';
 import '../features/camera/presentation/camera_screen.dart';
 import '../features/monuments/presentation/monument_detail_screen.dart';
 import '../features/monuments/presentation/monuments_list_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
 import '../features/startup/presentation/startup_gate_screen.dart';
 import '../shared/logging/app_logger.dart';
 import '../shared/widgets/app_shell.dart';
@@ -21,9 +21,12 @@ class AppRoutePaths {
   static const settings = '/settings';
 }
 
+final RouteObserver<ModalRoute<void>> appRouteObserver =
+    RouteObserver<ModalRoute<void>>();
+
 final appRouter = GoRouter(
   initialLocation: AppRoutePaths.startup,
-  observers: [RouteLoggerObserver()],
+  observers: [RouteLoggerObserver(), appRouteObserver],
   routes: [
     GoRoute(
       path: AppRoutePaths.startup,

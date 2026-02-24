@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../app/router.dart';
 import '../../monuments/application/monuments_providers.dart';
 import '../../monuments/domain/monument.dart';
+import '../../settings/application/settings_providers.dart';
 import '../application/camera_permission_controller.dart';
 import '../application/camera_preview_controller.dart';
 import '../scan/scan_providers.dart';
@@ -19,72 +21,135 @@ class CameraScreen extends ConsumerStatefulWidget {
   ConsumerState<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends ConsumerState<CameraScreen> {
+class _CameraScreenState extends ConsumerState<CameraScreen>
+    with RouteAware, WidgetsBindingObserver {
   bool _didInitialSync = false;
+  bool _routeSubscribed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_routeSubscribed) {
+      return;
+    }
+    final route = ModalRoute.of(context);
+    if (route is PageRoute<dynamic>) {
+      appRouteObserver.subscribe(this, route);
+      _routeSubscribed = true;
+    }
+  }
+
+  @override
+  void didPushNext() {
+    ref.read(scanControllerProvider.notifier).stop();
+  }
+
+  @override
+  void didPopNext() {
+    _syncScanStateFromCurrentConditions();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      ref.read(scanControllerProvider.notifier).stop();
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed && _isCurrentRoute()) {
+      _syncScanStateFromCurrentConditions();
+    }
+  }
 
   @override
   void dispose() {
+    if (_routeSubscribed) {
+      appRouteObserver.unsubscribe(this);
+    }
+    WidgetsBinding.instance.removeObserver(this);
     ref.read(scanControllerProvider.notifier).stop();
     super.dispose();
+  }
+
+  bool _isCurrentRoute() => ModalRoute.of(context)?.isCurrent ?? false;
+
+  void _syncScanStateFromCurrentConditions() {
+    if (!mounted || !_isCurrentRoute()) {
+      return;
+    }
+
+    final scan = ref.read(scanControllerProvider.notifier);
+    final autoRecognition = ref.read(autoRecognitionEnabledProvider);
+    final permission = ref.read(cameraPermissionControllerProvider);
+    final preview = ref.read(cameraPreviewControllerProvider);
+
+    if (!autoRecognition || permission != PermissionStatus.granted) {
+      scan.stop();
+      return;
+    }
+
+    preview.whenData(scan.start);
   }
 
   @override
   Widget build(BuildContext context) {
     final permissionStatus = ref.watch(cameraPermissionControllerProvider);
     final permissionController = ref.read(cameraPermissionControllerProvider.notifier);
+    final autoRecognitionEnabled = ref.watch(autoRecognitionEnabledProvider);
+    final showConfidence = ref.watch(showConfidenceProvider);
+    final hapticEnabled = ref.watch(hapticOnRecognizeProvider);
 
-    ref.listen<PermissionStatus>(
-      cameraPermissionControllerProvider,
-      (previous, next) {
-        if (next != PermissionStatus.granted) {
-          ref.read(scanControllerProvider.notifier).stop();
-          return;
-        }
+    ref.listen<ScanState>(scanControllerProvider, (previous, next) {
+      if ((previous?.isLocked ?? false) == false && next.isLocked && hapticEnabled) {
+        HapticFeedback.lightImpact();
+      }
+    });
 
-        final preview = ref.read(cameraPreviewControllerProvider);
-        preview.whenData((controller) {
-          ref.read(scanControllerProvider.notifier).start(controller);
-        });
-      },
-    );
+    ref.listen<bool>(autoRecognitionEnabledProvider, (previous, next) {
+      if (!next) {
+        ref.read(scanControllerProvider.notifier).stop();
+        return;
+      }
+      _syncScanStateFromCurrentConditions();
+    });
 
-    ref.listen<AsyncValue<CameraController>>(
-      cameraPreviewControllerProvider,
-      (previous, next) {
-        next.when(
-          data: (controller) {
-            final permission = ref.read(cameraPermissionControllerProvider);
-            if (permission == PermissionStatus.granted) {
-              ref.read(scanControllerProvider.notifier).start(controller);
-            }
-          },
-          loading: () {},
-          error: (_, __) {
-            ref.read(scanControllerProvider.notifier).stop();
-          },
-        );
-      },
-    );
+    ref.listen<PermissionStatus>(cameraPermissionControllerProvider, (previous, next) {
+      final scan = ref.read(scanControllerProvider.notifier);
+      if (next != PermissionStatus.granted) {
+        scan.stop();
+        return;
+      }
+      if (!ref.read(autoRecognitionEnabledProvider)) {
+        return;
+      }
+      ref.read(cameraPreviewControllerProvider).whenData(scan.start);
+    });
+
+    ref.listen<AsyncValue<CameraController>>(cameraPreviewControllerProvider, (previous, next) {
+      next.when(
+        data: (controller) {
+          if (!ref.read(autoRecognitionEnabledProvider)) {
+            return;
+          }
+          final permission = ref.read(cameraPermissionControllerProvider);
+          if (permission == PermissionStatus.granted) {
+            ref.read(scanControllerProvider.notifier).start(controller);
+          }
+        },
+        loading: () {},
+        error: (_, __) => ref.read(scanControllerProvider.notifier).stop(),
+      );
+    });
 
     if (!_didInitialSync) {
       _didInitialSync = true;
-      Future.microtask(() {
-        if (!mounted) {
-          return;
-        }
-
-        final permission = ref.read(cameraPermissionControllerProvider);
-        final preview = ref.read(cameraPreviewControllerProvider);
-
-        if (permission != PermissionStatus.granted) {
-          ref.read(scanControllerProvider.notifier).stop();
-          return;
-        }
-
-        preview.whenData((controller) {
-          ref.read(scanControllerProvider.notifier).start(controller);
-        });
-      });
+      Future.microtask(_syncScanStateFromCurrentConditions);
     }
 
     if (permissionStatus != PermissionStatus.granted) {
@@ -103,19 +168,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     final cameraAsync = ref.watch(cameraPreviewControllerProvider);
     final scanState = ref.watch(scanControllerProvider);
     final lockedId = scanState.lockedMonumentId;
-    final lockedMonument = lockedId == null
-        ? null
-        : ref.watch(monumentByIdProvider(lockedId));
+    final lockedMonument =
+        lockedId == null ? null : ref.watch(monumentByIdProvider(lockedId));
 
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(
-            child: _FullScreenPreview(cameraAsync: cameraAsync),
-          ),
-          Positioned.fill(
-            child: _ScanOverlay(scanState: scanState),
-          ),
+          Positioned.fill(child: _FullScreenPreview(cameraAsync: cameraAsync)),
+          Positioned.fill(child: _ScanOverlay(scanState: scanState)),
           if (scanState.isLocked)
             Positioned.fill(
               child: IgnorePointer(
@@ -143,10 +203,23 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
               child: _BottomPanel(
                 scanState: scanState,
                 monument: lockedMonument,
+                showConfidence: showConfidence,
+                autoRecognitionEnabled: autoRecognitionEnabled,
+                previewReady: cameraAsync.hasValue,
                 onOpenDetails: lockedId == null
                     ? null
                     : () => context.push('${AppRoutePaths.monument}/$lockedId'),
                 onRetry: () => ref.read(scanControllerProvider.notifier).retry(),
+                onStartManual: () {
+                  if (!cameraAsync.hasValue) {
+                    return;
+                  }
+                  cameraAsync.whenData(
+                    (controller) =>
+                        ref.read(scanControllerProvider.notifier).start(controller),
+                  );
+                },
+                onStopManual: () => ref.read(scanControllerProvider.notifier).stop(),
               ),
             ),
           ),
@@ -240,7 +313,7 @@ class _FullScreenPreview extends StatelessWidget {
           ),
         ),
       ),
-      loading: () => _PreviewFallback(
+      loading: () => const _PreviewFallback(
         icon: Icons.hourglass_bottom_rounded,
         message: 'Avvio fotocamera...',
       ),
@@ -309,7 +382,11 @@ class _ScanOverlay extends StatelessWidget {
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
                     shadows: [
-                      Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
                     ],
                   ),
                 ),
@@ -320,9 +397,7 @@ class _ScanOverlay extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 15,
-                    shadows: [
-                      Shadow(color: Colors.black45, blurRadius: 6),
-                    ],
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 6)],
                   ),
                 ),
               ],
@@ -391,14 +466,24 @@ class _BottomPanel extends StatelessWidget {
   const _BottomPanel({
     required this.scanState,
     required this.monument,
+    required this.showConfidence,
+    required this.autoRecognitionEnabled,
+    required this.previewReady,
     required this.onOpenDetails,
     required this.onRetry,
+    required this.onStartManual,
+    required this.onStopManual,
   });
 
   final ScanState scanState;
   final Monument? monument;
+  final bool showConfidence;
+  final bool autoRecognitionEnabled;
+  final bool previewReady;
   final VoidCallback? onOpenDetails;
   final VoidCallback onRetry;
+  final VoidCallback onStartManual;
+  final VoidCallback onStopManual;
 
   @override
   Widget build(BuildContext context) {
@@ -411,6 +496,7 @@ class _BottomPanel extends StatelessWidget {
               key: const ValueKey('locked-panel'),
               scanState: scanState,
               monument: monument,
+              showConfidence: showConfidence,
               onOpenDetails: onOpenDetails,
               onRetry: onRetry,
             )
@@ -418,16 +504,32 @@ class _BottomPanel extends StatelessWidget {
               key: const ValueKey('status-pill'),
               message: scanState.message,
               isBusy: scanState.isBusy,
+              autoRecognitionEnabled: autoRecognitionEnabled,
+              previewReady: previewReady,
+              onStartManual: onStartManual,
+              onStopManual: onStopManual,
             ),
     );
   }
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({super.key, required this.message, required this.isBusy});
+  const _StatusPill({
+    super.key,
+    required this.message,
+    required this.isBusy,
+    required this.autoRecognitionEnabled,
+    required this.previewReady,
+    required this.onStartManual,
+    required this.onStopManual,
+  });
 
   final String message;
   final bool isBusy;
+  final bool autoRecognitionEnabled;
+  final bool previewReady;
+  final VoidCallback onStartManual;
+  final VoidCallback onStopManual;
 
   @override
   Widget build(BuildContext context) {
@@ -439,24 +541,45 @@ class _StatusPill extends StatelessWidget {
           color: Colors.black.withOpacity(0.35),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isBusy) ...[
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isBusy) ...[
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: Text(message, style: const TextStyle(color: Colors.white)),
                 ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              message,
-              style: const TextStyle(color: Colors.white),
+              ],
             ),
+            if (!autoRecognitionEnabled) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: previewReady ? onStartManual : null,
+                    child: const Text('Avvia scansione'),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                    onPressed: onStopManual,
+                    child: const Text('Ferma'),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -469,12 +592,14 @@ class _LockedResultPanel extends StatelessWidget {
     super.key,
     required this.scanState,
     required this.monument,
+    required this.showConfidence,
     required this.onOpenDetails,
     required this.onRetry,
   });
 
   final ScanState scanState;
   final Monument? monument;
+  final bool showConfidence;
   final VoidCallback? onOpenDetails;
   final VoidCallback onRetry;
 
@@ -518,23 +643,24 @@ class _LockedResultPanel extends StatelessWidget {
               child: monument == null
                   ? Container(
                       color: theme.colorScheme.surfaceContainerHighest,
-                      child: const Center(child: Icon(Icons.image_not_supported_outlined)),
+                      child: const Center(
+                        child: Icon(Icons.image_not_supported_outlined),
+                      ),
                     )
                   : Image.network(
                       monument!.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: theme.colorScheme.surfaceContainerHighest,
-                        child: const Center(child: Icon(Icons.image_not_supported_outlined)),
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported_outlined),
+                        ),
                       ),
                     ),
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            monument?.name ?? 'Monumento riconosciuto',
-            style: theme.textTheme.titleLarge,
-          ),
+          Text(monument?.name ?? 'Monumento riconosciuto', style: theme.textTheme.titleLarge),
           const SizedBox(height: 6),
           Text(
             monument?.description ?? 'Monumento non disponibile nel dataset locale.',
@@ -542,11 +668,13 @@ class _LockedResultPanel extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Confidenza ${(scanState.lockedConfidence * 100).toStringAsFixed(0)}%',
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
-          ),
+          if (showConfidence) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Confidenza ${(scanState.lockedConfidence * 100).toStringAsFixed(0)}%',
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -558,10 +686,7 @@ class _LockedResultPanel extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('Riprova'),
-            ),
+            child: OutlinedButton(onPressed: onRetry, child: const Text('Riprova')),
           ),
         ],
       ),

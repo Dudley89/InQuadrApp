@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../app/router.dart';
+import '../../../features/location/application/location_controller.dart';
 import '../../../shared/logging/app_logger.dart';
 import '../../../shared/startup/startup_requirements_checker.dart';
 
@@ -71,6 +73,7 @@ class _StartupGateScreenState extends ConsumerState<StartupGateScreen>
       });
 
       if (status.allSatisfied) {
+        unawaited(ref.read(locationControllerProvider.notifier).bootstrap());
         context.go(AppRoutePaths.home);
       }
     } catch (error) {
