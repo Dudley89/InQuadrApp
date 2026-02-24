@@ -1,0 +1,20 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub/
+build/
+
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Android
+android/.gradle/
+
+# Keep icon PNG binaries out of git history in this branch
+android/app/src/main/res/mipmap/ic_launcher.png
+assets/icons/app_icon.png
+ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
