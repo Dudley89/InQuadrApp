@@ -272,3 +272,6 @@
   - sostituito box fisso con card "Suggerimenti" dismissable per sessione (`tipsVisibleProvider`).
 - Hotfix runtime Riverpod/Navigator lock: in `CameraScreen` le reazioni a `RouteAware` e lifecycle (`didPushNext`, `didPopNext`, `didChangeAppLifecycleState`) ora deferiscono start/stop scan con `WidgetsBinding.instance.addPostFrameCallback` per evitare modifiche provider durante il build/navigation lock.
 - `ScanController.stop()` reso più idempotente: ritorno anticipato quando già fermo e nessun `state` update ridondante quando lo stato è già "Scansione ferma".
+- MonumentDetailScreen aggiornato: rimossa risoluzione posizione via `FutureBuilder/_resolveUserPosition` e integrato `locationControllerProvider` per marker utente `Tu` (my_location) sia preview mappa sia sheet mappa.
+- Aggiunte CTA sotto hero: `Mappa` apre bottom sheet quasi full-screen con `FlutterMap` + marker + overlay card in basso; `Audio guida` apre mini-player UI-only con play/pause finto, progress bar, messaggio prossimamente e chiusura.
+- `_MarkerInfoCard` ridisegnata con mini immagine network (fallback icona), nome, distanza, pulsante `Apri scheda` e close; vecchia card Audio guida disabilitata rimossa dal body principale.
