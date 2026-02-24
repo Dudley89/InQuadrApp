@@ -230,3 +230,14 @@
   - pulsante back overlay (senza AppBar),
   - bottom sheet risultato locked con immagine, titolo, descrizione, confidenza, `Apri dettagli` e `Riprova`.
 - Nessuna modifica alla logica di recognition/scan controller: start/stop/retry e mock recognizer invariati.
+
+### Iterazione 2026-02-23 (V4.2 Home moderna + route releases)
+- Home completamente rifatta in stile moderno: header con saluto dinamico per fascia oraria, sottotitolo contestuale e avatar top-right.
+- Aggiunta navigazione avatar verso nuova route `/releases` (screen "Prossime release").
+- Nuove sezioni home:
+  - hero "Inquadra un monumento" con immagine + overlay + CTA fotocamera,
+  - "Vicino a te" con carousel orizzontale monumenti locali,
+  - "In evidenza" basata su `featuredMonumentProvider` con CTA "Scopri",
+  - "Tutti i monumenti" con mini-grid e CTA "Vedi tutti".
+- Conferma uscita mantenuta invariata con `PopScope` + dialog "Sei sicuro di uscire?".
+- Aggiunta schermata `ReleasesScreen` con elenco placeholder delle prossime release (v5-v10).

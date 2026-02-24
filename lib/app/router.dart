@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/account/presentation/releases_screen.dart';
 import '../features/camera/presentation/camera_screen.dart';
 import '../features/monuments/presentation/monument_detail_screen.dart';
 import '../features/monuments/presentation/monuments_list_screen.dart';
@@ -14,6 +15,7 @@ class AppRoutePaths {
   static const camera = '/camera';
   static const monuments = '/monuments';
   static const monument = '/monument';
+  static const releases = '/releases';
 }
 
 final appRouter = GoRouter(
@@ -35,6 +37,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutePaths.monuments,
       builder: (context, state) => const MonumentsListScreen(),
+    ),
+    GoRoute(
+      path: AppRoutePaths.releases,
+      builder: (context, state) => const ReleasesScreen(),
     ),
     GoRoute(
       path: '${AppRoutePaths.monument}/:id',
