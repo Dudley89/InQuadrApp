@@ -6,13 +6,11 @@ import '../features/camera/presentation/camera_screen.dart';
 import '../features/monuments/presentation/monument_detail_screen.dart';
 import '../features/monuments/presentation/monuments_list_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
-import '../features/startup/presentation/startup_gate_screen.dart';
 import '../shared/logging/app_logger.dart';
 import '../shared/widgets/app_shell.dart';
 import '../shared/widgets/home_screen.dart';
 
 class AppRoutePaths {
-  static const startup = '/startup';
   static const home = '/home';
   static const camera = '/camera';
   static const monuments = '/monuments';
@@ -25,13 +23,9 @@ final RouteObserver<ModalRoute<void>> appRouteObserver =
     RouteObserver<ModalRoute<void>>();
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutePaths.startup,
+  initialLocation: AppRoutePaths.home,
   observers: [RouteLoggerObserver(), appRouteObserver],
   routes: [
-    GoRoute(
-      path: AppRoutePaths.startup,
-      builder: (context, state) => const StartupGateScreen(),
-    ),
     GoRoute(
       path: AppRoutePaths.home,
       builder: (context, state) => const AppShell(child: HomeScreen()),

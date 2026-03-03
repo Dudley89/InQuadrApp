@@ -278,3 +278,10 @@
 - MonumentDetailScreen premium refactor: rimossa la mappa inline dal body, introdotto layout `CustomScrollView` con `SliverAppBar` hero (overlay gradiente + back/favorite) e info bar sovrapposta con CTA `Apri mappa` + `Audio guida`.
 - Scheda dettaglio riorganizzata in card (Descrizione, Storia/Curiosità con espansione “Leggi tutto”, Vicini tappabili, Accessibilità con Chip, Info tecniche collassabile, CTA `Pianifica visita`).
 - Aptico riconoscimento rafforzato: `ScanController` ora attiva aptico nel ramo lock (source of truth, rispettando `hapticOnRecognizeProvider`) con doppia chiamata light+medium in microtask; `CameraScreen` mantiene backup post-frame con `HapticFeedback.mediumImpact()` al transition unlock->lock.
+- Rimozione totale startup gate/requisiti iniziali: eliminate route `/startup`, `AppRoutePaths.startup`, `StartupGateScreen`, checker requisiti startup e widget correlati; app ora parte direttamente da `/home`.
+- Permessi/controlli on-demand consolidati: fotocamera resta richiesta in CameraScreen; posizione resta attivabile dalla Home con pulsante `Attiva posizione` quando non disponibile.
+- Aggiunto stato rete non bloccante con provider Riverpod (`networkStatusProvider` su `connectivity_plus`) e badge Online/Offline in Home e Impostazioni.
+- Introdotto caching immagini su disco via `cached_network_image` sostituendo le `Image.network` nelle schermate principali (Home, Camera locked panel, MonumentDetail hero/marker card).
+- Aggiunta predisposizione caching asset riconoscimento in `RecognitionAssetCache` (path `ApplicationSupportDirectory`, versioning per monumento, get/getOrDownload/clearOldVersions).
+- ScanController: aggiunta cancellazione sicura dei file temporanei creati da `takePicture()` in `finally` dopo lettura bytes.
+- Dataset monumenti aggiornato: URL corretto del Chiostro e coordinate aggiornate per Obelisco, Chiostro e Statua di Dante.

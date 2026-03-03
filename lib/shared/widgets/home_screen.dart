@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,7 @@ import '../../features/location/application/location_controller.dart';
 import '../../features/monuments/application/monuments_providers.dart';
 import '../../features/monuments/domain/monument.dart';
 import '../../features/settings/application/settings_providers.dart';
+import '../network/network_status_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -52,6 +54,7 @@ class HomeScreen extends ConsumerWidget {
     final featured = ref.watch(featuredMonumentProvider);
     final locationState = ref.watch(locationControllerProvider);
     final tipsVisible = ref.watch(tipsVisibleProvider);
+    final networkStatus = ref.watch(networkStatusProvider);
 
     final nearbyItems = _sortedNearby(monuments, locationState).take(6).toList();
     final gridItems = monuments.take(6).toList();
@@ -76,6 +79,7 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 _HeaderSection(
                   greeting: _greeting(DateTime.now()),
+                  networkStatus: networkStatus,
                   onOpenReleases: () => context.push(AppRoutePaths.releases),
                 ),
                 const SizedBox(height: 18),
@@ -86,7 +90,9 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 20),
                 _SectionTitle(
                   title: 'Vicino a te',
-                  trailing: locationState.enabled
+                  trailing: locationState.enabled &&
+                          locationState.latitude != null &&
+                          locationState.longitude != null
                       ? null
                       : TextButton(
                           onPressed: () => ref.read(locationControllerProvider.notifier).enable(),
@@ -190,9 +196,14 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class _HeaderSection extends StatelessWidget {
-  const _HeaderSection({required this.greeting, required this.onOpenReleases});
+  const _HeaderSection({
+    required this.greeting,
+    required this.networkStatus,
+    required this.onOpenReleases,
+  });
 
   final String greeting;
+  final AsyncValue<NetworkStatus> networkStatus;
   final VoidCallback onOpenReleases;
 
   @override
@@ -210,6 +221,8 @@ class _HeaderSection extends StatelessWidget {
                 'Scansiona e scopri i monumenti intorno a te',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
+              const SizedBox(height: 10),
+              _NetworkBadge(status: networkStatus),
             ],
           ),
         ),
@@ -228,6 +241,28 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
+class _NetworkBadge extends StatelessWidget {
+  const _NetworkBadge({required this.status});
+
+  final AsyncValue<NetworkStatus> status;
+
+  @override
+  Widget build(BuildContext context) {
+    return status.when(
+      data: (value) => Chip(
+        label: Text(value == NetworkStatus.online ? 'Online' : 'Offline'),
+        avatar: Icon(
+          value == NetworkStatus.online ? Icons.wifi : Icons.wifi_off,
+          size: 18,
+          color: value == NetworkStatus.online ? Colors.green : Colors.orange,
+        ),
+      ),
+      loading: () => const Chip(label: Text('Rete...')),
+      error: (_, __) => const Chip(label: Text('Rete sconosciuta')),
+    );
+  }
+}
+
 class _HeroScanCard extends StatelessWidget {
   const _HeroScanCard({required this.imageUrl, required this.onOpenCamera});
 
@@ -242,10 +277,14 @@ class _HeroScanCard extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
+              placeholder: (context, url) => Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Icon(Icons.photo_outlined, size: 54),
               ),
@@ -318,10 +357,13 @@ class _NearbyCard extends StatelessWidget {
                 child: SizedBox(
                   height: 96,
                   width: double.infinity,
-                  child: Image.network(
-                    monument.imageUrl,
+                  child: CachedNetworkImage(
+                    imageUrl: monument.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    placeholder: (context, url) => Container(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                    errorWidget: (context, url, error) => Container(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: const Icon(Icons.photo_outlined),
                     ),
@@ -363,10 +405,13 @@ class _MiniMonumentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                   child: SizedBox(
                     width: double.infinity,
-                    child: Image.network(
-                      monument.imageUrl,
+                    child: CachedNetworkImage(
+                      imageUrl: monument.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                      placeholder: (context, url) => Container(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      ),
+                      errorWidget: (context, url, error) => Container(
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         child: const Icon(Icons.photo_outlined),
                       ),

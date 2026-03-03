@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,10 +56,15 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    monument.imageUrl,
+                  CachedNetworkImage(
+                    imageUrl: monument.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    placeholder: (context, url) => Container(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    ),
+                    errorWidget: (context, url, error) => Container(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       alignment: Alignment.center,
                       child: const Icon(Icons.image_not_supported_outlined, size: 56),
@@ -706,10 +712,13 @@ class _MarkerInfoCard extends StatelessWidget {
                     child: SizedBox(
                       width: 70,
                       height: 70,
-                      child: Image.network(
-                        marker.imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: marker.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        placeholder: (context, url) => Container(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                        errorWidget: (context, url, error) => Container(
                           color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           child: const Icon(Icons.image_not_supported_outlined),
                         ),

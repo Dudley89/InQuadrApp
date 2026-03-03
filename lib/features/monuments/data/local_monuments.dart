@@ -12,8 +12,8 @@ const localMonuments = <Monument>[
     imageUrl:
         'https://upload.wikimedia.org/wikipedia/commons/e/e1/La_piazza_dell%27Obelisco.jpg',
     accessibility: ['Testo grande', 'Trascrizione contenuti', 'Alto contrasto'],
-    latitude: 42.06842,
-    longitude: 13.25421,
+    latitude: 42.067539,
+    longitude: 13.252864,
   ),
   Monument(
     id: 'chiostro-san-francesco-tagliacozzo',
@@ -24,10 +24,10 @@ const localMonuments = <Monument>[
     deepDive:
         'Cammina sotto il portico lentamente, come se stessi seguendo un ritmo antico. La luce disegna ombre morbide sulle arcate, e ogni angolo invita a una pausa: una panchina, un dettaglio, un affresco, un silenzio che fa bene. È la tappa perfetta quando vuoi staccare dal movimento del paese e ritrovare un momento di calma, quasi intima, prima di rimetterti in cammino tra vicoli e piazze.',
     imageUrl:
-        'https://it.wikipedia.org/wiki/Chiesa_e_convento_di_San_Francesco_(Tagliacozzo)#/media/File:TagliacozzoSFrancescoChiostro2.jpg',
+        'https://upload.wikimedia.org/wikipedia/commons/1/12/TagliacozzoSFrancescoChiostro2.jpg',
     accessibility: ['Testo grande', 'Trascrizione contenuti', 'Navigazione semplificata'],
-    latitude: 42.06896,
-    longitude: 13.25329,
+    latitude: 42.068147,
+    longitude: 13.251097,
   ),
   Monument(
     id: 'statua-dante-tagliacozzo',
@@ -40,7 +40,7 @@ const localMonuments = <Monument>[
     imageUrl:
         'https://upload.wikimedia.org/wikipedia/commons/3/3f/Dante_Alighieri_Tagliacozzo.jpg',
     accessibility: ['Testo grande', 'Sottotitoli audio guida', 'Alto contrasto'],
-    latitude: 42.06812,
-    longitude: 13.25373,
+    latitude: 42.070600,
+    longitude: 13.255600,
   ),
 ];

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../shared/network/network_status_provider.dart';
 import '../../location/application/location_controller.dart';
 import '../application/settings_providers.dart';
 
@@ -14,12 +15,26 @@ class SettingsScreen extends ConsumerWidget {
     final showConfidence = ref.watch(showConfidenceProvider);
     final haptic = ref.watch(hapticOnRecognizeProvider);
     final locationState = ref.watch(locationControllerProvider);
+    final networkStatus = ref.watch(networkStatusProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Impostazioni')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          networkStatus.when(
+            data: (status) => Chip(
+              label: Text(status == NetworkStatus.online ? 'Online' : 'Offline'),
+              avatar: Icon(
+                status == NetworkStatus.online ? Icons.wifi : Icons.wifi_off,
+                color: status == NetworkStatus.online ? Colors.green : Colors.orange,
+                size: 18,
+              ),
+            ),
+            loading: () => const Chip(label: Text('Rete...')),
+            error: (_, __) => const Chip(label: Text('Rete sconosciuta')),
+          ),
+          const SizedBox(height: 12),
           _SectionCard(
             title: 'Riconoscimento',
             children: [

@@ -99,9 +99,11 @@ class ScanController extends StateNotifier<ScanState> {
 
     state = state.copyWith(isBusy: true, message: 'Analisi in corso...');
 
+    File? tempFile;
     try {
       final picture = await controller.takePicture();
-      final bytes = await File(picture.path).readAsBytes();
+      tempFile = File(picture.path);
+      final bytes = await tempFile.readAsBytes();
       final result = await _recognizer.recognize(bytes);
       _handleResult(result);
     } catch (error) {
@@ -109,6 +111,11 @@ class ScanController extends StateNotifier<ScanState> {
       _resetStreak();
       state = state.copyWith(message: 'Errore riconoscimento');
     } finally {
+      if (tempFile != null) {
+        try {
+          await tempFile.delete();
+        } catch (_) {}
+      }
       if (!state.isLocked) {
         state = state.copyWith(isBusy: false);
       }

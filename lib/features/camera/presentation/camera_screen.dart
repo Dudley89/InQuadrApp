@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -661,10 +662,14 @@ class _LockedResultPanel extends StatelessWidget {
                         child: Icon(Icons.image_not_supported_outlined),
                       ),
                     )
-                  : Image.network(
-                      monument!.imageUrl,
+                  : CachedNetworkImage(
+                      imageUrl: monument!.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                      placeholder: (context, url) => Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Container(
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: const Center(
                           child: Icon(Icons.image_not_supported_outlined),
