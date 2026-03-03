@@ -288,3 +288,4 @@
 - Tentativo aggiornamento dipendenze MAJOR per blocchi (0..7) secondo piano richiesto; in questo container i binari `flutter`/`dart` non sono disponibili (`command not found`), quindi non è stato possibile eseguire `flutter pub get/analyze/test` ad ogni step.
 - Aggiornato `pubspec.yaml` ai target richiesti: permission_handler 12, connectivity_plus 7, geolocator 14, camera 0.12, flutter_map 8.2.2, go_router 17.1, flutter_riverpod/riverpod 3.2.1, flutter_lints 6.0.0.
 - Nessun ulteriore refactor codice applicato in assenza di toolchain locale; necessaria validazione runtime/compile in ambiente con Flutter SDK installato.
+- Downgrade compatibilità Riverpod: `flutter_riverpod` fissato a `2.6.1`, rimossa dependency diretta `riverpod` 3.x e aggiunto `dependency_overrides.riverpod: 2.6.1` per evitare mix major e ripristinare API 2.x (`StateNotifierProvider/StateProvider/StateNotifier`).
