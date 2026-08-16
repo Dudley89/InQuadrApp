@@ -20,3 +20,11 @@ android/.gradle/
 android/app/src/main/res/mipmap/ic_launcher.png
 assets/icons/app_icon.png
 ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
+
+# Secrets — non versionare mai
+*.env
+key.properties
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.jks
