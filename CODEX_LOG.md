@@ -289,3 +289,16 @@
 - Aggiornato `pubspec.yaml` ai target richiesti: permission_handler 12, connectivity_plus 7, geolocator 14, camera 0.12, flutter_map 8.2.2, go_router 17.1, flutter_riverpod/riverpod 3.2.1, flutter_lints 6.0.0.
 - Nessun ulteriore refactor codice applicato in assenza di toolchain locale; necessaria validazione runtime/compile in ambiente con Flutter SDK installato.
 - Downgrade compatibilità Riverpod: `flutter_riverpod` fissato a `2.6.1`, rimossa dependency diretta `riverpod` 3.x e aggiunto `dependency_overrides.riverpod: 2.6.1` per evitare mix major e ripristinare API 2.x (`StateNotifierProvider/StateProvider/StateNotifier`).
+
+### Iterazione 2026-08-16 (prima verifica reale toolchain + pulizia residui startup gate)
+- Eseguita la prima verifica reale su questa macchina (SDK Flutter presente, a differenza di gran parte delle iterazioni precedenti mai validate):
+  - `flutter pub get`: OK, nessun conflitto. Nodo `riverpod` confermato risolto a `2.6.1` via `dependency_overrides` (`flutter pub deps` mostra `riverpod 2.6.1 (overridden)`), coerente con l'API 2.x richiesta.
+  - `flutter analyze`: 12 issue di livello `info` (deprecazioni `withOpacity`→`.withValues()`, `desiredAccuracy` di geolocator, `onPopInvoked`→`onPopInvokedWithResult`, 2 `prefer_const_constructors`), nessun `error`. Non risolte in questa iterazione (fuori scope, un task alla volta).
+  - `flutter test`: rosso. `test/widget_test.dart` testava uno `StartupGateScreen` con `pumpAndSettle` che andava in timeout.
+- Verificato che la voce di log dell'iterazione V4.4 ("Rimozione totale startup gate") era **incompleta**: la route `/startup` era stata tolta dal router, ma i file sorgente erano rimasti fisicamente nel repo, non referenziati da nessun import in `lib/`:
+  - `lib/features/startup/presentation/startup_gate_screen.dart`
+  - `lib/shared/widgets/startup_permission_requester.dart`
+  - `lib/shared/startup/startup_requirements_checker.dart`
+  - Confermato via grep incrociato + lettura di `router.dart`/`inquadra_app.dart`/`app_shell.dart`: nessun riferimento vivo. File eliminati insieme alle cartelle vuote residue.
+- Riscritto `test/widget_test.dart` sul flusso reale (avvio diretto su `/home`, nessun gate): verifica presenza CTA `Apri fotocamera`, hero `Inquadra un monumento`, sezioni `Vicino a te`/`Tutti i monumenti`. Sostituito `pumpAndSettle` con `pump()` a durata fissa: il vecchio hang non era legato allo StartupGate ma quasi certamente a un'animazione indeterminata (`CircularProgressIndicator`/badge rete) che non termina mai da sola.
+- Esito finale: `flutter analyze` 12 info preesistenti (invariate, nessuna nuova), `flutter test` verde (1/1).
