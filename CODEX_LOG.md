@@ -314,6 +314,19 @@
   - **Task 8 (trasferta a Tagliacozzo, calibrazione definitiva sul campo) rimandato a una fase successiva**, fuori da questo sprint. Obiettivo dei prossimi giorni: recognizer funzionante e calibrato sui dati disponibili ora (foto esistenti + negativi da web), non il punto operativo finale.
 - Cartelle nuove approvate (fuori da `lib/`, quindi fuori dal vincolo architetturale ma segnalate): `dataset/` (foto di calibrazione, mai committata) e `tool/` (script di calibrazione Dart puro). Route debug-only `/dev/recognition` sotto `if (kDebugMode)` approvata per il dev tool di generazione/verifica embedding.
 - `.gitignore`: aggiunta `/dataset/`, verificata con `git check-ignore` prima di scrivere qualsiasi file dentro.
-- Piano completo salvato in `C:\Users\matte\.claude\plans\leggi-il-file-prompt-recognizer-md-staged-swing.md` (ordine di lavoro task 0-7 di questo sprint, task 8 rimandato, rischi, blocker, dipendenze).
+- Piano completo predisposto con ordine di lavoro task 0-7 di questo sprint, task 8 rimandato, rischi, blocker e dipendenze.
 - **Nessun codice del recognizer scritto in questa iterazione.** `flutter analyze`/`flutter test` invariati rispetto alla iterazione precedente (nessuna modifica a `lib/`).
 - **Prossimo passo: riprendere dal task 0** — inventario delle foto dei 3 monumenti (quante, che copertura di angoli/distanze/luci, quanti negativi utilizzabili) non appena trasferite dal telefono in `dataset/tagliacozzo/`.
+
+### Iterazione 2026-08-20 (pulizia configurazioni assistente obsolete)
+- Rimossi la configurazione e il documento operativo dedicati a un assistente non più in uso.
+- Trasferite in `AGENTS.md` le istruzioni di progetto ancora valide e indipendenti dallo strumento.
+- Ripuliti i riferimenti dedicati presenti nei requisiti e in questo diario, senza modificare codice o funzionalità dell'app.
+- Verifiche Flutter e Dart non eseguibili in questo container perché i relativi SDK non sono installati (`command not found`).
+
+### Iterazione 2026-08-20 (dataset monumenti di Sorbo di Tagliacozzo)
+- Aggiunti Cenotafio, Chiesa di Santa Maria delle Grazie e Colonna miliaria con identificatori 1004-1006, localizzazione completa, coordinate e immagini fornite.
+- Esteso in modo retrocompatibile il modello `Monument` con località, indirizzo e suddivisioni amministrative; aggiunte deserializzazione con fallback e ricerca per nome/località.
+- La lista monumenti ora offre ricerca testuale e mostra località e indirizzo; la scheda omette sezioni opzionali vuote.
+- Aggiunti test per dataset, identificatori, ricerca, routing, retrocompatibilità e coerenza dei profili di riconoscimento. Nessun embedding è stato inventato.
+- `flutter pub get`, formattazione Dart, analisi e test non sono eseguibili nel container perché gli SDK Flutter/Dart non sono installati (`command not found`).

@@ -36,3 +36,5 @@
 - idGlobal (int, chiave db)
 - imageUrl (URL immagine da mostrare in scheda)
 - latitude/longitude
+- locality/address (località distinta dal Comune e indirizzo)
+- municipality/province/region/country

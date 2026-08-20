@@ -3,7 +3,7 @@
 Baseline dei requisiti. Sostituisce ogni specifica precedente ricostruita a memoria.
 
 > **Attenzione — da verificare al primo utilizzo.**
-> Gli stati marcati ✅ derivano dalla lettura di `CODEX_LOG.md` e del `README.md`, **non da una verifica sul codice compilato**. Molte iterazioni del log sono state chiuse senza mai eseguire `flutter analyze`. Il primo task di Claude Code su questo file è **rileggere il codice reale e correggere gli stati sbagliati**, poi rimuovere questo avviso.
+> Gli stati marcati ✅ derivano dalla lettura di `CODEX_LOG.md` e del `README.md`, **non da una verifica sul codice compilato**. Molte iterazioni del log sono state chiuse senza mai eseguire `flutter analyze`. Prima di usare questo file come baseline, **rileggere il codice reale e correggere gli stati sbagliati**, poi rimuovere questo avviso.
 
 Legenda: ✅ fatto · 🔧 da fare (MVP) · ⏸️ rimandato post-MVP · ❓ decisione aperta
 
@@ -13,7 +13,7 @@ Legenda: ✅ fatto · 🔧 da fare (MVP) · ⏸️ rimandato post-MVP · ❓ dec
 
 InQuadra è un'app turistica mobile: il visitatore inquadra un monumento con la fotocamera e l'app lo riconosce automaticamente, aprendo la scheda informativa.
 
-- **Pilota:** Tagliacozzo (3 monumenti)
+- **Pilota:** Comune di Tagliacozzo (6 monumenti, inclusa la località Sorbo di Tagliacozzo)
 - **Architettura:** predisposta multi-Comune — Tagliacozzo è il primo dataset, non l'app stessa
 - **Principio fondante:** niente QR code, niente scatto manuale, niente selezione preventiva del monumento da una lista
 
@@ -36,7 +36,7 @@ Un LLM **non fa parte** della pipeline di riconoscimento: eventualmente serve so
 | Interfaccia `MonumentRecognizer` + `ScanController` (throttle, busy gating, streak, lock, retry) | ✅ |
 | `MockMonumentRecognizer` con esito casuale | ✅ da **sostituire** |
 | Modello di embedding on-device scelto e integrato | 🔧 |
-| Embedding di riferimento generati per i 3 monumenti | 🔧 |
+| Embedding di riferimento generati per i monumenti pilota | 🔧 |
 | Cosine similarity contro i candidati | 🔧 |
 | Prefiltro geografico dei candidati | 🔧 |
 | Scan automatico all'ingresso in camera, senza pulsante "Scatta" | ✅ |
@@ -87,6 +87,9 @@ Monument
  ├─ accessibility     // mantenuto: requisito dichiarato del prodotto
  ├─ latitude
  ├─ longitude
+ ├─ locality/address  // località distinta dal Comune e indirizzo
+ ├─ municipality
+ ├─ province/region/country
  └─ images[]          // 🔧 migrazione da imageUrl (singolo) a lista
 ```
 
@@ -94,7 +97,7 @@ Monument
 
 🔧 **Da fare:** `imageUrl` → `images[]`. Un monumento ha bisogno di più immagini di riferimento per il riconoscimento (angoli, luce, stagioni diverse).
 
-Dataset pilota: Obelisco (`1001`), Chiostro di San Francesco (`1002`), Statua di Dante (`1003`).
+Dataset pilota: Obelisco (`1001`), Chiostro di San Francesco (`1002`), Statua di Dante (`1003`), Cenotafio (`1004`), Chiesa di Santa Maria delle Grazie (`1005`) e Colonna miliaria (`1006`). Gli ultimi tre appartengono alla località Sorbo di Tagliacozzo.
 
 ---
 
@@ -136,7 +139,7 @@ connectivity_plus     stato rete
 Android: AGP 8.6.0, Gradle 8.7.
 Versioni Flutter/Dart: **da rileggere dal progetto reale**, non dai valori riportati nelle vecchie iterazioni.
 
-⚠️ Stato dipendenze **non verificato**: vedi §4 di `CLAUDE.md`.
+⚠️ Verificare lo stato delle dipendenze rispetto al manifest e al lockfile correnti.
 
 ---
 
