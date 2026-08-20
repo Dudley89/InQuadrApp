@@ -323,3 +323,10 @@
 - Trasferite in `AGENTS.md` le istruzioni di progetto ancora valide e indipendenti dallo strumento.
 - Ripuliti i riferimenti dedicati presenti nei requisiti e in questo diario, senza modificare codice o funzionalità dell'app.
 - Verifiche Flutter e Dart non eseguibili in questo container perché i relativi SDK non sono installati (`command not found`).
+
+### Iterazione 2026-08-20 (dataset monumenti di Sorbo di Tagliacozzo)
+- Aggiunti Cenotafio, Chiesa di Santa Maria delle Grazie e Colonna miliaria con identificatori 1004-1006, localizzazione completa, coordinate e immagini fornite.
+- Esteso in modo retrocompatibile il modello `Monument` con località, indirizzo e suddivisioni amministrative; aggiunte deserializzazione con fallback e ricerca per nome/località.
+- La lista monumenti ora offre ricerca testuale e mostra località e indirizzo; la scheda omette sezioni opzionali vuote.
+- Aggiunti test per dataset, identificatori, ricerca, routing, retrocompatibilità e coerenza dei profili di riconoscimento. Nessun embedding è stato inventato.
+- `flutter pub get`, formattazione Dart, analisi e test non sono eseguibili nel container perché gli SDK Flutter/Dart non sono installati (`command not found`).
