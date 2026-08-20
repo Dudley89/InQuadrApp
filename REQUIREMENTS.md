@@ -3,7 +3,7 @@
 Baseline dei requisiti. Sostituisce ogni specifica precedente ricostruita a memoria.
 
 > **Attenzione — da verificare al primo utilizzo.**
-> Gli stati marcati ✅ derivano dalla lettura di `CODEX_LOG.md` e del `README.md`, **non da una verifica sul codice compilato**. Molte iterazioni del log sono state chiuse senza mai eseguire `flutter analyze`. Il primo task di Claude Code su questo file è **rileggere il codice reale e correggere gli stati sbagliati**, poi rimuovere questo avviso.
+> Gli stati marcati ✅ derivano dalla lettura di `CODEX_LOG.md` e del `README.md`, **non da una verifica sul codice compilato**. Molte iterazioni del log sono state chiuse senza mai eseguire `flutter analyze`. Prima di usare questo file come baseline, **rileggere il codice reale e correggere gli stati sbagliati**, poi rimuovere questo avviso.
 
 Legenda: ✅ fatto · 🔧 da fare (MVP) · ⏸️ rimandato post-MVP · ❓ decisione aperta
 
@@ -136,7 +136,7 @@ connectivity_plus     stato rete
 Android: AGP 8.6.0, Gradle 8.7.
 Versioni Flutter/Dart: **da rileggere dal progetto reale**, non dai valori riportati nelle vecchie iterazioni.
 
-⚠️ Stato dipendenze **non verificato**: vedi §4 di `CLAUDE.md`.
+⚠️ Verificare lo stato delle dipendenze rispetto al manifest e al lockfile correnti.
 
 ---
 
