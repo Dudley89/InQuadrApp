@@ -16,7 +16,7 @@ class _MonumentsListScreenState extends ConsumerState<MonumentsListScreen> {
   String _query = '';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final repository = ref.watch(monumentsRepositoryProvider);
     final monuments = repository.search(_query);
 

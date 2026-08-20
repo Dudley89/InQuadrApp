@@ -330,3 +330,8 @@
 - La lista monumenti ora offre ricerca testuale e mostra località e indirizzo; la scheda omette sezioni opzionali vuote.
 - Aggiunti test per dataset, identificatori, ricerca, routing, retrocompatibilità e coerenza dei profili di riconoscimento. Nessun embedding è stato inventato.
 - `flutter pub get`, formattazione Dart, analisi e test non sono eseguibili nel container perché gli SDK Flutter/Dart non sono installati (`command not found`).
+
+### Iterazione 2026-08-20 (fix firma build lista monumenti)
+- Corretta la firma di `_MonumentsListScreenState.build` rimuovendo il parametro `WidgetRef`: la classe estende già `ConsumerState`, che espone `ref` come proprietà.
+- Conservati invariati stato locale della ricerca, provider osservato, filtro, routing e interfaccia.
+- Formattazione, analisi, test e build APK ARM64 non eseguibili nel container perché gli SDK Flutter/Dart non sono installati (`command not found`).
