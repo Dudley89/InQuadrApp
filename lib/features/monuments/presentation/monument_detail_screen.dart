@@ -145,33 +145,39 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
                       child: Text(monument.description),
                     ),
                     const SizedBox(height: 12),
-                    _SectionCard(
-                      title: 'Storia e curiosità',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            child: Text(
-                              monument.deepDive,
-                              maxLines: _isDeepDiveExpanded ? null : 4,
-                              overflow: _isDeepDiveExpanded
-                                  ? TextOverflow.visible
-                                  : TextOverflow.fade,
+                    if (monument.deepDive.isNotEmpty) ...[
+                      _SectionCard(
+                        title: 'Storia e curiosità',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOut,
+                              child: Text(
+                                monument.deepDive,
+                                maxLines: _isDeepDiveExpanded ? null : 4,
+                                overflow: _isDeepDiveExpanded
+                                    ? TextOverflow.visible
+                                    : TextOverflow.fade,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () {
-                              setState(() => _isDeepDiveExpanded = !_isDeepDiveExpanded);
-                            },
-                            child: Text(_isDeepDiveExpanded ? 'Mostra meno' : 'Leggi tutto'),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () {
+                                setState(
+                                  () => _isDeepDiveExpanded = !_isDeepDiveExpanded,
+                                );
+                              },
+                              child: Text(
+                                _isDeepDiveExpanded ? 'Mostra meno' : 'Leggi tutto',
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     _SectionCard(
                       title: 'Monumenti vicini (<= 200m)',
                       child: nearbyMonuments.isEmpty
@@ -194,17 +200,20 @@ class _MonumentDetailScreenState extends ConsumerState<MonumentDetailScreen> {
                             ),
                     ),
                     const SizedBox(height: 12),
-                    _SectionCard(
-                      title: 'Accessibilità',
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final item in monument.accessibility) Chip(label: Text(item)),
-                        ],
+                    if (monument.accessibility.isNotEmpty) ...[
+                      _SectionCard(
+                        title: 'Accessibilità',
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final item in monument.accessibility)
+                              Chip(label: Text(item)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     _SectionCard(
                       title: 'Info tecniche',
                       child: ExpansionTile(
@@ -338,13 +347,22 @@ class _InfoBar extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${monument.latitude.toStringAsFixed(5)}, ${monument.longitude.toStringAsFixed(5)}',
+                    monument.locality == null
+                        ? '${monument.latitude.toStringAsFixed(5)}, ${monument.longitude.toStringAsFixed(5)}'
+                        : '${monument.address}, ${monument.locality}',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
+            if (monument.municipality != null) ...[
+              Text(
+                '${monument.municipality}, ${monument.province} · ${monument.region}, ${monument.country}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 6),
+            ],
             Text(
               'ID globale: ${monument.idGlobal}',
               style: Theme.of(context)
